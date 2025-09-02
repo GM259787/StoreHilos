@@ -1,0 +1,30 @@
+{
+  "name": "todo-app-monorepo",
+  "version": "1.0.0",
+  "description": "Monorepo con backend .NET 8 y frontend React + TypeScript",
+  "scripts": {
+    "dev": "concurrently -k -n SERVER,CLIENT \"dotnet watch run --project server\" \"npm --prefix client run dev\"",
+    "setup": "dotnet restore server && dotnet ef database update --project server && npm --prefix client install",
+    "server:restore": "dotnet restore server",
+    "server:dev": "dotnet watch run --project server",
+    "server:migrate": "dotnet ef database update --project server",
+    "client:install": "npm --prefix client install",
+    "client:dev": "npm --prefix client run dev",
+    "client:build": "npm --prefix client run build",
+    "client:lint": "npm --prefix client run lint"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  },
+  "keywords": [
+    "dotnet",
+    "react",
+    "typescript",
+    "vite",
+    "entity-framework",
+    "todo-app"
+  ],
+  "author": "DevOps/Full-Stack Developer",
+  "license": "MIT"
+}

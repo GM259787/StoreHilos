@@ -1,0 +1,30 @@
+# Etapa de build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /app
+
+# Copiar archivos de proyecto y restaurar dependencias
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copiar todo el código fuente
+COPY . ./
+
+# Build de la aplicación
+RUN dotnet build -c Release -o /app/build
+
+# Publicar la aplicación
+RUN dotnet publish -c Release -o /app/publish
+
+# Etapa de runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# Copiar la aplicación publicada
+COPY --from=build /app/publish ./
+
+# Exponer puerto
+EXPOSE 5175
+
+# Comando para ejecutar la aplicación
+ENTRYPOINT ["dotnet", "Server.dll"]
+
