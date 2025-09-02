@@ -18,6 +18,8 @@ public class OrderDto
     public List<OrderItemDto> Items { get; set; } = new();
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerEmail { get; set; } = string.Empty;
+    public string? CustomerPhone { get; set; }
+    public string? CustomerShippingInstructions { get; set; }
 }
 
 public class OrderItemDto

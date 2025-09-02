@@ -189,9 +189,27 @@ const Admin = () => {
                           <p className="text-sm text-gray-500">
                             Cliente: {order.customerName} ({order.customerEmail})
                           </p>
+                          {order.customerPhone && (
+                            <p className="text-sm text-gray-500">
+                              Teléfono: {order.customerPhone}
+                            </p>
+                          )}
                           <p className="text-sm text-gray-500">
                             Fecha: {new Date(order.createdAt).toLocaleDateString()}
                           </p>
+                          
+                          {/* Información de envío */}
+                          <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                            <h4 className="text-xs font-medium text-gray-700 mb-1">Dirección de Envío:</h4>
+                            <p className="text-xs text-gray-600">
+                              {order.shippingAddress}, {order.shippingCity} {order.shippingPostalCode}
+                            </p>
+                            {order.customerShippingInstructions && (
+                              <p className="text-xs text-gray-600 mt-1">
+                                <span className="font-medium">Instrucciones:</span> {order.customerShippingInstructions}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-semibold text-gray-900">

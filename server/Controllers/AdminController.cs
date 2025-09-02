@@ -54,6 +54,8 @@ public class AdminController : ControllerBase
                 CreatedAt = o.CreatedAt,
                 CustomerName = $"{o.User.FirstName} {o.User.LastName}",
                 CustomerEmail = o.User.Email,
+                CustomerPhone = o.User.ShippingPhone,
+                CustomerShippingInstructions = o.User.ShippingInstructions,
                 Items = o.OrderItems.Select(oi => new OrderItemDto
                 {
                     Id = oi.Id,
@@ -106,6 +108,8 @@ public class AdminController : ControllerBase
                 CreatedAt = o.CreatedAt,
                 CustomerName = $"{o.User.FirstName} {o.User.LastName}",
                 CustomerEmail = o.User.Email,
+                CustomerPhone = o.User.ShippingPhone,
+                CustomerShippingInstructions = o.User.ShippingInstructions,
                 Items = o.OrderItems.Select(oi => new OrderItemDto
                 {
                     Id = oi.Id,

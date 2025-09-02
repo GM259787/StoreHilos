@@ -51,6 +51,11 @@ export interface User {
   googlePicture?: string;
   emailConfirmed: boolean;
   role: string;
+  shippingPhone?: string;
+  shippingAddress?: string;
+  shippingCity?: string;
+  shippingPostalCode?: string;
+  shippingInstructions?: string;
 }
 
 export interface AuthResponse {
@@ -107,6 +112,8 @@ export interface Order {
   items: OrderItem[];
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
+  customerShippingInstructions?: string;
 }
 
 export interface CreateOrderData {

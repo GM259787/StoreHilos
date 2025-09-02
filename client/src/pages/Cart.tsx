@@ -4,13 +4,16 @@ import { useCartStore } from '../store/cart';
 import { useAuthStore } from '../store/auth';
 import { ordersApi } from '../api/orders';
 import { cartApi } from '../api/cart';
+import { authApi } from '../api/auth';
 import CartItemRow from '../components/CartItemRow';
+import ShippingInfoForm, { ShippingInfo } from '../components/ShippingInfoForm';
 
 const Cart = () => {
   const { items, clearCart, getTotalItems, getTotalPrice } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user, updateUser } = useAuthStore();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showShippingForm, setShowShippingForm] = useState(false);
   
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
@@ -32,19 +35,49 @@ const Cart = () => {
       alert('El carrito está vacío.');
       return;
     }
-    
+
+    // Verificar si el usuario ya tiene datos de envío
+    if (user?.shippingAddress && user?.shippingPhone && user?.shippingCity && user?.shippingPostalCode) {
+      // Si ya tiene datos, proceder directamente
+      await processOrder();
+    } else {
+      // Si no tiene datos, mostrar formulario
+      setShowShippingForm(true);
+    }
+  };
+
+  const handleShippingInfoSubmit = async (shippingInfo: ShippingInfo) => {
+    try {
+      setIsProcessing(true);
+      
+      // Actualizar datos de envío del usuario
+      const updatedUser = await authApi.updateShippingInfo(shippingInfo);
+      updateUser(updatedUser);
+      
+      // Ocultar formulario y procesar pedido
+      setShowShippingForm(false);
+      await processOrder(shippingInfo);
+    } catch (error) {
+      console.error('Error actualizando datos de envío:', error);
+      alert('Error al guardar los datos de envío. Por favor, intenta nuevamente.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const processOrder = async (shippingInfo?: ShippingInfo) => {
     try {
       setIsProcessing(true);
       
       // Sincronizar carrito con el backend
       await cartApi.syncCart(items);
       
-      // Crear orden real en la base de datos
+      // Usar los datos de envío del formulario o del usuario
       const orderData = {
-        shippingAddress: 'Dirección de envío', // En una app real, esto vendría de un formulario
-        shippingCity: 'Ciudad',
-        shippingPostalCode: '00000',
-        notes: 'Pedido desde el carrito'
+        shippingAddress: shippingInfo?.shippingAddress || user?.shippingAddress || '',
+        shippingCity: shippingInfo?.shippingCity || user?.shippingCity || '',
+        shippingPostalCode: shippingInfo?.shippingPostalCode || user?.shippingPostalCode || '',
+        notes: shippingInfo?.shippingInstructions || user?.shippingInstructions || 'Pedido desde el carrito'
       };
       
       await ordersApi.createOrder(orderData);
@@ -52,9 +85,14 @@ const Cart = () => {
       alert('¡Pedido procesado con éxito! Serás redirigido a tus pedidos.');
       clearCart();
       navigate('/orders');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error procesando pedido:', error);
-      alert('Error al procesar el pedido. Por favor, intenta nuevamente.');
+      console.error('Detalles del error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      alert(`Error al procesar el pedido: ${error.response?.data?.message || error.message}. Por favor, intenta nuevamente.`);
     } finally {
       setIsProcessing(false);
     }
@@ -105,6 +143,31 @@ const Cart = () => {
       {/* Resumen */}
       <div className="bg-gray-50 rounded-lg p-6 mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Resumen del pedido</h2>
+        
+        {/* Estado de datos de envío */}
+        {user?.shippingAddress && (
+          <div className="mb-4 p-3 rounded-md border border-gray-200 bg-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm text-green-600 font-medium">Dirección configurada</span>
+              </div>
+              <button
+                onClick={() => setShowShippingForm(true)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Modificar
+              </button>
+            </div>
+            <div className="mt-2 text-sm text-gray-600">
+              <p>{user.shippingAddress}, {user.shippingCity} {user.shippingPostalCode}</p>
+              {user.shippingPhone && <p>Tel: {user.shippingPhone}</p>}
+            </div>
+          </div>
+        )}
+        
         <div className="space-y-2">
           <div className="flex justify-between">
             <span className="text-gray-600">Productos ({totalItems}):</span>
@@ -143,6 +206,18 @@ const Cart = () => {
           {isProcessing ? 'Procesando...' : 'Avanzar pedido'}
         </button>
       </div>
+
+      {/* Formulario de datos de envío */}
+      {showShippingForm && (
+        <div className="mt-8 p-6 bg-white rounded-lg shadow-md">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Datos de envío</h2>
+          <ShippingInfoForm 
+            onSubmit={handleShippingInfoSubmit} 
+            onCancel={() => setShowShippingForm(false)}
+            isLoading={isProcessing}
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -89,4 +89,20 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Usuario no encontrado" });
         }
     }
+
+    [Authorize]
+    [HttpPut("shipping-info")]
+    public async Task<ActionResult<UserDto>> UpdateShippingInfo([FromBody] UpdateShippingInfoDto shippingInfoDto)
+    {
+        try
+        {
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var user = await _authService.UpdateShippingInfoAsync(userId, shippingInfoDto);
+            return Ok(user);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "Usuario no encontrado" });
+        }
+    }
 }

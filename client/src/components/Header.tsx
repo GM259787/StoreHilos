@@ -73,6 +73,16 @@ const Header: React.FC = () => {
                     Gestionar Productos
                   </Link>
                 )}
+                
+                {/* Solo Cobrador puede gestionar categorías */}
+                {user.role === 'Cobrador' && (
+                  <Link
+                    to="/categories"
+                    className="text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    Categorías
+                  </Link>
+                )}
               </>
             )}
           </nav>
@@ -225,6 +235,17 @@ const Header: React.FC = () => {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Gestionar Productos
+                    </Link>
+                  )}
+                  
+                  {/* Solo Cobrador puede gestionar categorías */}
+                  {user.role === 'Cobrador' && (
+                    <Link
+                      to="/categories"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Categorías
                     </Link>
                   )}
                   

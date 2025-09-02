@@ -1,34 +1,41 @@
 import api from './http';
-import { AuthResponse, LoginData, RegisterData, GoogleAuthData, User } from '../types/catalog';
+import { UserDto, AuthResponseDto, LoginDto, RegisterDto, GoogleAuthDto } from '../types/auth';
+import { ShippingInfo } from '../components/ShippingInfoForm';
 
 export const authApi = {
   // Login tradicional
-  login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/api/auth/login', data);
+  login: async (data: LoginDto): Promise<AuthResponseDto> => {
+    const response = await api.post<AuthResponseDto>('/api/auth/login', data);
     return response.data;
   },
 
   // Registro
-  register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/api/auth/register', data);
+  register: async (data: RegisterDto): Promise<AuthResponseDto> => {
+    const response = await api.post<AuthResponseDto>('/api/auth/register', data);
     return response.data;
   },
 
   // Google Auth
-  googleAuth: async (data: GoogleAuthData): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/api/auth/google', data);
+  googleAuth: async (data: GoogleAuthDto): Promise<AuthResponseDto> => {
+    const response = await api.post<AuthResponseDto>('/api/auth/google', data);
     return response.data;
   },
 
   // Obtener usuario actual
-  getCurrentUser: async (): Promise<User> => {
-    const response = await api.get<User>('/api/auth/me');
+  getCurrentUser: async (): Promise<UserDto> => {
+    const response = await api.get('/api/auth/me');
     return response.data;
   },
 
   // Actualizar usuario
-  updateUser: async (data: Partial<User>): Promise<User> => {
-    const response = await api.put<User>('/api/auth/me', data);
+  updateUser: async (data: Partial<UserDto>): Promise<UserDto> => {
+    const response = await api.put('/api/auth/me', data);
+    return response.data;
+  },
+
+  // Actualizar datos de envío
+  updateShippingInfo: async (shippingInfo: ShippingInfo): Promise<UserDto> => {
+    const response = await api.put('/api/auth/shipping-info', shippingInfo);
     return response.data;
   }
 };

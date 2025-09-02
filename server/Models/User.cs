@@ -35,6 +35,22 @@ public class User
     [StringLength(10)]
     public string? PostalCode { get; set; }
     
+    // Datos adicionales para envío
+    [StringLength(20)]
+    public string? ShippingPhone { get; set; }
+    
+    [StringLength(500)]
+    public string? ShippingInstructions { get; set; }
+    
+    [StringLength(100)]
+    public string? ShippingAddress { get; set; }
+    
+    [StringLength(50)]
+    public string? ShippingCity { get; set; }
+    
+    [StringLength(10)]
+    public string? ShippingPostalCode { get; set; }
+    
     public bool IsActive { get; set; } = true;
     public bool EmailConfirmed { get; set; } = false;
     

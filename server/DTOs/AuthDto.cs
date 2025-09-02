@@ -37,6 +37,13 @@ public class UserDto
     public string? GooglePicture { get; set; }
     public bool EmailConfirmed { get; set; }
     public string Role { get; set; } = string.Empty;
+    
+    // Datos de envío
+    public string? ShippingPhone { get; set; }
+    public string? ShippingAddress { get; set; }
+    public string? ShippingCity { get; set; }
+    public string? ShippingPostalCode { get; set; }
+    public string? ShippingInstructions { get; set; }
 }
 
 public class AuthResponseDto

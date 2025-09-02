@@ -17,6 +17,7 @@ public interface IAuthService
     Task<AuthResponseDto> GoogleAuthAsync(GoogleAuthDto googleAuthDto);
     Task<UserDto> GetUserAsync(int userId);
     Task<UserDto> UpdateUserAsync(int userId, UserDto userDto);
+    Task<UserDto> UpdateShippingInfoAsync(int userId, UpdateShippingInfoDto shippingInfoDto);
 }
 
 public class AuthService : IAuthService
@@ -163,6 +164,26 @@ public class AuthService : IAuthService
         return MapToUserDto(user);
     }
 
+    public async Task<UserDto> UpdateShippingInfoAsync(int userId, UpdateShippingInfoDto shippingInfoDto)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
+
+        if (user == null)
+            throw new UnauthorizedAccessException("Usuario no encontrado");
+
+        user.ShippingPhone = shippingInfoDto.ShippingPhone;
+        user.ShippingAddress = shippingInfoDto.ShippingAddress;
+        user.ShippingCity = shippingInfoDto.ShippingCity;
+        user.ShippingPostalCode = shippingInfoDto.ShippingPostalCode;
+        user.ShippingInstructions = shippingInfoDto.ShippingInstructions;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return MapToUserDto(user);
+    }
+
     private async Task<AuthResponseDto> GenerateAuthResponseAsync(User user)
     {
         var token = GenerateJwtToken(user);
@@ -233,7 +254,12 @@ public class AuthService : IAuthService
             PostalCode = user.PostalCode,
             GooglePicture = user.GooglePicture,
             EmailConfirmed = user.EmailConfirmed,
-            Role = user.Role?.Name ?? "Customer"
+            Role = user.Role?.Name ?? "Customer",
+            ShippingPhone = user.ShippingPhone,
+            ShippingAddress = user.ShippingAddress,
+            ShippingCity = user.ShippingCity,
+            ShippingPostalCode = user.ShippingPostalCode,
+            ShippingInstructions = user.ShippingInstructions
         };
     }
 }

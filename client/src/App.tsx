@@ -9,6 +9,7 @@ import Auth from './pages/Auth';
 import Orders from './pages/Orders';
 import Admin from './pages/Admin';
 import ProductManagement from './pages/ProductManagement';
+import Categories from './pages/Categories';
 import { useAuthStore } from './store/auth';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
             <Route path="/orders" element={user ? <Orders /> : <Navigate to="/auth" />} />
             <Route path="/admin" element={user ? <Admin /> : <Navigate to="/auth" />} />
             <Route path="/products" element={user && user.role === 'Cobrador' ? <ProductManagement /> : <Navigate to="/auth" />} />
+            <Route path="/categories" element={user && user.role === 'Cobrador' ? <Categories /> : <Navigate to="/auth" />} />
           </Routes>
         </main>
         <Footer />

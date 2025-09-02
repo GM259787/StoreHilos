@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, AuthResponse } from '../types/catalog';
+import { UserDto, AuthResponseDto } from '../types/auth';
 import { authApi } from '../api/auth';
 
 interface AuthStore {
-  user: User | null;
+  user: UserDto | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -16,7 +16,7 @@ interface AuthStore {
   googleAuth: (idToken: string, email: string, firstName: string, lastName: string, picture?: string) => Promise<void>;
   logout: () => void;
   getCurrentUser: () => Promise<void>;
-  updateUser: (data: Partial<User>) => Promise<void>;
+  updateUser: (data: Partial<UserDto>) => Promise<void>;
   clearError: () => void;
 }
 
@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthStore>()(
         login: async (email: string, password: string) => {
           set({ isLoading: true, error: null });
           try {
-            const response: AuthResponse = await authApi.login({ email, password });
+            const response: AuthResponseDto = await authApi.login({ email, password });
             set({
               user: response.user,
               token: response.token,
@@ -54,7 +54,7 @@ export const useAuthStore = create<AuthStore>()(
         register: async (email: string, password: string, firstName: string, lastName: string, phone?: string) => {
           set({ isLoading: true, error: null });
           try {
-            const response: AuthResponse = await authApi.register({ email, password, firstName, lastName, phone });
+            const response: AuthResponseDto = await authApi.register({ email, password, firstName, lastName, phone });
             set({
               user: response.user,
               token: response.token,
@@ -73,7 +73,7 @@ export const useAuthStore = create<AuthStore>()(
         googleAuth: async (idToken: string, email: string, firstName: string, lastName: string, picture?: string) => {
           set({ isLoading: true, error: null });
           try {
-            const response: AuthResponse = await authApi.googleAuth({ idToken, email, firstName, lastName, picture });
+            const response: AuthResponseDto = await authApi.googleAuth({ idToken, email, firstName, lastName, picture });
             set({
               user: response.user,
               token: response.token,
@@ -130,7 +130,7 @@ export const useAuthStore = create<AuthStore>()(
           }
         },
 
-        updateUser: async (data: Partial<User>) => {
+        updateUser: async (data: Partial<UserDto>) => {
           set({ isLoading: true, error: null });
           try {
             const user = await authApi.updateUser(data);
