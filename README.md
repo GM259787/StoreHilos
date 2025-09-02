@@ -1,236 +1,192 @@
+# 🛍️ E-Commerce Application
 
-# Catálogo de Productos - Monorepo Full-Stack
+Aplicación de comercio electrónico completa con backend en .NET 8 y frontend en React.
 
-Una aplicación moderna de catálogo de productos con carrito de compras y sistema de autenticación, construida con **.NET 8 Web API** (backend) y **React + TypeScript + Vite** (frontend).
-
-## 🚀 Tecnologías
+## 🏗️ Arquitectura
 
 ### Backend (.NET 8)
-- **ASP.NET Core 8** - Framework web
-- **Entity Framework Core** - ORM para base de datos
-- **SQLite** - Base de datos local (desarrollo)
-- **PostgreSQL** - Base de datos de producción (opcional)
-- **JWT Bearer** - Autenticación
-- **Serilog** - Logging estructurado
-- **Swagger** - Documentación de API
+- **Framework**: ASP.NET Core 8.0
+- **Base de Datos**: SQLite con Entity Framework Core
+- **Autenticación**: JWT Bearer Tokens
+- **API**: RESTful con Swagger/OpenAPI
+- **Middleware**: CORS, Autenticación, Autorización, Archivos Estáticos
 
 ### Frontend (React)
-- **React 18** - Biblioteca de UI
-- **TypeScript** - Tipado estático
-- **Vite** - Build tool y dev server
-- **Tailwind CSS** - Framework de estilos
-- **React Router** - Navegación
-- **Axios** - Cliente HTTP
-- **Zustand** - Gestión de estado
-- **ESLint + Prettier** - Linting y formateo
+- **Framework**: React 18 con TypeScript
+- **Build Tool**: Vite
+- **Estado**: Zustand para gestión de estado
+- **Routing**: React Router v6
+- **UI**: Tailwind CSS
+- **HTTP Client**: Axios
 
-## 📋 Requisitos Previos
+## 🚀 Características
 
-- **.NET 8 SDK** - [Descargar aquí](https://dotnet.microsoft.com/download/dotnet/8.0)
-- **Node.js 18+** - [Descargar aquí](https://nodejs.org/)
-- **npm** o **pnpm** (incluido con Node.js)
+### 🔐 Sistema de Autenticación
+- Login/Registro de usuarios
+- JWT tokens para sesiones
+- Roles de usuario (Cliente, Cobrador, Armador)
+- Protección de rutas basada en roles
 
-## 🛠️ Instalación y Configuración
+### 🛒 Gestión del Carrito
+- Agregar/eliminar productos
+- Modificar cantidades
+- Persistencia en localStorage
+- Cálculo automático de totales
 
-### 1. Clonar el repositorio
-```bash
-git clone <tu-repositorio>
-cd app
-```
+### 📱 Interfaz de Usuario
+- Diseño responsive con Tailwind CSS
+- Navegación condicional por roles
+- Catálogo de productos con filtros
+- Gestión de pedidos
+- Panel de administración
 
-### 2. Configuración inicial
-```bash
-# Instalar dependencias del monorepo
-npm install
+### 🎯 Roles de Usuario
 
-# Configurar y migrar base de datos
-npm run setup
-```
+#### Cliente
+- Ver catálogo de productos
+- Agregar productos al carrito
+- Realizar pedidos
+- Ver historial de pedidos
 
-### 3. Ejecutar en desarrollo
-```bash
-# Ejecutar backend y frontend simultáneamente
-npm run dev
-```
+#### Cobrador
+- Acceso a administración
+- Gestión de productos
+- Ver pedidos confirmados
+
+#### Armador
+- Solo acceso a administración
+- Ver pedidos ya pagados
 
 ## 📁 Estructura del Proyecto
 
 ```
 app/
-├── server/                 # Backend .NET 8
-│   ├── Controllers/        # Controladores API
-│   ├── Models/            # Modelos de datos
-│   ├── Data/              # Contexto EF y Seed
-│   ├── Auth/              # Configuración JWT
-│   └── Properties/        # Configuración de lanzamiento
-├── client/                # Frontend React
+├── client/                 # Frontend React
 │   ├── src/
-│   │   ├── api/           # Cliente HTTP
-│   │   ├── components/    # Componentes React
-│   │   ├── pages/         # Páginas de la aplicación
-│   │   ├── store/         # Estado global (Zustand)
-│   │   └── types/         # Tipos TypeScript
-│   └── public/            # Archivos estáticos
-└── infra/                 # Configuración Docker (opcional)
+│   │   ├── components/    # Componentes reutilizables
+│   │   ├── pages/        # Páginas de la aplicación
+│   │   ├── store/        # Estado global (Zustand)
+│   │   ├── api/          # Cliente HTTP para APIs
+│   │   └── types/        # Definiciones TypeScript
+│   └── package.json
+├── server/                # Backend .NET
+│   ├── Controllers/      # Controladores de la API
+│   ├── Models/          # Entidades de la base de datos
+│   ├── Services/        # Lógica de negocio
+│   ├── DTOs/           # Objetos de transferencia de datos
+│   ├── Data/           # Contexto de EF y migraciones
+│   └── wwwroot/        # Archivos estáticos (imágenes)
+└── infra/               # Configuración Docker
 ```
 
-## 🎯 Endpoints de la API
+## 🛠️ Tecnologías Utilizadas
 
-### Base URL: `http://localhost:5175`
+### Backend
+- **.NET 8.0**
+- **Entity Framework Core**
+- **SQLite**
+- **JWT Authentication**
+- **Swagger/OpenAPI**
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check |
-| `GET` | `/swagger` | Documentación Swagger |
-| `GET` | `/api/todos` | Obtener todas las tareas |
-| `GET` | `/api/todos/{id}` | Obtener tarea por ID |
-| `POST` | `/api/todos` | Crear nueva tarea |
-| `PUT` | `/api/todos/{id}` | Actualizar tarea |
-| `DELETE` | `/api/todos/{id}` | Eliminar tarea |
+### Frontend
+- **React 18**
+- **TypeScript**
+- **Vite**
+- **Tailwind CSS**
+- **Zustand**
+- **React Router**
+- **Axios**
 
-## 🖥️ Puertos y URLs
+## 🚀 Instalación y Configuración
 
-- **Backend API**: http://localhost:5175
-- **Frontend**: http://localhost:5173
-- **Swagger**: http://localhost:5175/swagger
-- **Health Check**: http://localhost:5175/health
-
-## 📝 Scripts Disponibles
-
-### Scripts del Monorepo (raíz)
-```bash
-npm run dev              # Ejecutar backend y frontend
-npm run setup            # Configuración inicial completa
-npm run server:dev       # Solo backend
-npm run client:dev       # Solo frontend
-npm run server:migrate   # Migrar base de datos
-```
-
-### Scripts del Backend
-```bash
-cd server
-dotnet restore          # Restaurar paquetes
-dotnet run              # Ejecutar aplicación
-dotnet watch run        # Ejecutar con hot reload
-dotnet ef database update  # Migrar base de datos
-```
-
-### Scripts del Frontend
-```bash
-cd client
-npm install             # Instalar dependencias
-npm run dev             # Servidor de desarrollo
-npm run build           # Build de producción
-npm run lint            # Ejecutar ESLint
-```
-
-## 🔐 Autenticación
-
-La aplicación incluye un sistema de autenticación JWT simulado:
-
-- **Usuario demo**: `admin`
-- **Contraseña demo**: `admin`
-
-> ⚠️ **Nota**: En un entorno de producción, implementa un sistema de autenticación real.
-
-## 🗄️ Base de Datos
-
-### Desarrollo (SQLite)
-- Archivo: `server/app.db`
-- Configuración automática
-- Migraciones automáticas al iniciar
-
-### Producción (PostgreSQL - Opcional)
-```bash
-# Variables de entorno para PostgreSQL
-DB_PROVIDER=postgres
-PGHOST=localhost
-PGDATABASE=app
-PGUSER=postgres
-PGPASSWORD=postgres
-PGPORT=5432
-```
-
-## 🧪 Testing
+### Prerrequisitos
+- .NET 8.0 SDK
+- Node.js 18+ y npm
+- Git
 
 ### Backend
 ```bash
 cd server
-dotnet test
+dotnet restore
+dotnet ef database update
+dotnet run
 ```
 
 ### Frontend
 ```bash
 cd client
-npm run test
+npm install
+npm run dev
 ```
 
-## 📦 Build de Producción
+## 🌐 Endpoints de la API
 
-### Backend
-```bash
-cd server
-dotnet publish -c Release
-```
+### Autenticación
+- `POST /api/auth/login` - Iniciar sesión
+- `POST /api/auth/register` - Registrar usuario
 
-### Frontend
-```bash
-cd client
-npm run build
-```
+### Productos
+- `GET /api/products` - Listar productos
+- `GET /api/products/{id}` - Obtener producto
+- `POST /api/products` - Crear producto (Cobrador)
+- `PUT /api/products/{id}` - Actualizar producto (Cobrador)
+- `DELETE /api/products/{id}` - Eliminar producto (Cobrador)
 
-## 🔧 Configuración de Desarrollo
+### Categorías
+- `GET /api/categories` - Listar categorías
+
+### Carrito
+- `POST /api/cart/sync` - Sincronizar carrito
+
+### Pedidos
+- `GET /api/orders` - Listar pedidos del usuario
+- `POST /api/orders` - Crear pedido
+
+### Administración
+- `GET /api/admin/orders` - Listar todos los pedidos (Armador/Cobrador)
+
+## 🔧 Configuración
 
 ### Variables de Entorno
+```bash
+# Backend (.NET)
+JWT__Key=your-super-secret-key-with-at-least-32-characters
+JWT__Issuer=your-issuer
+JWT__Audience=your-audience
 
-#### Backend (`server/appsettings.Development.json`)
-```json
-{
-  "ConnectionStrings": {
-    "Default": "Data Source=app.db"
-  },
-  "Jwt": {
-    "Issuer": "https://localhost:5175",
-    "Audience": "https://localhost:5173",
-    "Key": "dev-super-secret-key-with-at-least-32-characters-for-development-only"
-  }
-}
-```
-
-#### Frontend (`client/.env`)
-```env
+# Frontend (Vite)
 VITE_API_URL=http://localhost:5175
 ```
 
-## 🐛 Troubleshooting
+### Base de Datos
+- **Tipo**: SQLite
+- **Archivo**: `server/app.db`
+- **Migraciones**: Automáticas al iniciar la aplicación
 
-### Problemas Comunes
+## 📊 Base de Datos
 
-1. **Error de puerto ocupado**
-   ```bash
-   # Cambiar puertos en launchSettings.json (backend) o vite.config.ts (frontend)
-   ```
+### Entidades Principales
+- **User**: Usuarios del sistema
+- **Role**: Roles de usuario
+- **Product**: Productos del catálogo
+- **Category**: Categorías de productos
+- **Order**: Pedidos de usuarios
+- **OrderItem**: Items de pedidos
+- **ShoppingCart**: Carritos de compra
+- **CartItem**: Items del carrito
 
-2. **Error de base de datos**
-   ```bash
-   npm run server:migrate
-   ```
+## 🚀 Despliegue
 
-3. **Error de dependencias**
-   ```bash
-   npm run setup
-   ```
+### Docker
+```bash
+cd infra
+docker-compose up -d
+```
 
-4. **Error de CORS**
-   - Verificar que el frontend esté en `http://localhost:5173`
-   - Verificar configuración CORS en `Program.cs`
-
-## 📚 Recursos Adicionales
-
-- [Documentación .NET 8](https://docs.microsoft.com/en-us/dotnet/)
-- [Documentación React](https://react.dev/)
-- [Documentación Vite](https://vitejs.dev/)
-- [Documentación Tailwind CSS](https://tailwindcss.com/)
+### Manual
+1. Publicar backend: `dotnet publish -c Release`
+2. Construir frontend: `npm run build`
+3. Servir archivos estáticos desde el backend
 
 ## 🤝 Contribución
 
@@ -240,10 +196,14 @@ VITE_API_URL=http://localhost:5175
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📄 Licencia
+## 📝 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+Este proyecto es privado y confidencial.
+
+## 📞 Soporte
+
+Para soporte técnico, contacta al equipo de desarrollo.
 
 ---
 
-**¡Disfruta desarrollando! 🚀**
+**Desarrollado con ❤️ usando .NET 8 y React**
