@@ -119,6 +119,18 @@ public class OrdersController : ControllerBase
             return BadRequest(new { message = "El carrito está vacío" });
         }
 
+        // Verificar stock disponible antes de crear el pedido
+        foreach (var cartItem in cart.CartItems)
+        {
+            var product = cartItem.Product;
+            if (product.AvailableStock < cartItem.Quantity)
+            {
+                return BadRequest(new { 
+                    message = $"No hay suficiente stock para el producto '{product.Name}'. Stock disponible: {product.AvailableStock}, solicitado: {cartItem.Quantity}" 
+                });
+            }
+        }
+
         // Generar número de pedido único
         var orderNumber = GenerateOrderNumber();
 
@@ -160,6 +172,13 @@ public class OrdersController : ControllerBase
 
         _context.OrderItems.AddRange(orderItems);
 
+        // RESERVAR PRODUCTOS: Aumentar el stock reservado
+        foreach (var cartItem in cart.CartItems)
+        {
+            var product = cartItem.Product;
+            product.ReservedStock += cartItem.Quantity;
+        }
+
         // Limpiar el carrito
         _context.CartItems.RemoveRange(cart.CartItems);
         _context.ShoppingCarts.Remove(cart);
@@ -199,6 +218,45 @@ public class OrdersController : ControllerBase
         };
 
         return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, orderDto);
+    }
+
+    [HttpPut("{id}/cancel")]
+    public async Task<ActionResult> CancelOrder(int id)
+    {
+        var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+        
+        var order = await _context.Orders
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == userId);
+
+        if (order == null)
+            return NotFound();
+
+        if (order.Status == "Cancelled")
+            return BadRequest(new { message = "El pedido ya está cancelado" });
+
+        if (order.IsPaid)
+            return BadRequest(new { message = "No se puede cancelar un pedido ya pagado" });
+
+        // Liberar reservas: Reducir el stock reservado
+        foreach (var orderItem in order.OrderItems)
+        {
+            var product = orderItem.Product;
+            product.ReservedStock -= orderItem.Quantity;
+            
+            // Asegurar que no sea negativo
+            if (product.ReservedStock < 0)
+                product.ReservedStock = 0;
+        }
+
+        // Marcar el pedido como cancelado
+        order.Status = "Cancelled";
+        order.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Pedido cancelado exitosamente" });
     }
 
     private string GenerateOrderNumber()

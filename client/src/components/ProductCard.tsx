@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Product } from '../types/catalog';
 import { useCartStore } from '../store/cart';
+import { formatPrice } from '../utils/currency';
 
 // Extender el tipo ImportMeta para incluir env
 declare global {
@@ -36,21 +37,29 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   const handleAddToCart = () => {
+    console.log('Agregando producto al carrito:', {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      availableStock: product.availableStock
+    });
+    
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
       imageUrl: product.imageUrl,
-      stock: product.stock
+      stock: product.stock,
+      availableStock: product.availableStock
     });
   };
 
   const handleQuantityChange = (newQuantity: number) => {
-    const validQuantity = Math.min(Math.max(1, newQuantity), product.stock);
+    const validQuantity = Math.min(Math.max(1, newQuantity), product.availableStock);
     setQuantity(validQuantity);
   };
 
-  const isOutOfStock = product.stock === 0;
+  const isOutOfStock = product.availableStock === 0;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
@@ -77,9 +86,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
         {/* Stock */}
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm text-gray-500">
-            Stock: {product.stock} unidades
-          </span>
+          <div className="text-sm text-gray-500">
+            <div>Stock total: {product.stock}</div>
+            
+          </div>
           {isOutOfStock && (
             <span className="text-sm text-red-500 font-medium">
               Sin stock
@@ -89,7 +99,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
         {/* Precio */}
         <div className="text-2xl font-bold text-gray-900 mb-4">
-          ${product.price.toFixed(2)}
+          {formatPrice(product.price)}
         </div>
 
         {/* Controles */}
@@ -112,7 +122,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 id={`quantity-${product.id}`}
                 type="number"
                 min="1"
-                max={product.stock}
+                max={product.availableStock}
                 value={quantity}
                 onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
                 className="w-16 text-center border-0 focus:ring-0 text-sm"
@@ -120,7 +130,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               <button
                 type="button"
                 onClick={() => handleQuantityChange(quantity + 1)}
-                disabled={quantity >= product.stock}
+                disabled={quantity >= product.availableStock}
                 className="px-3 py-1 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 +

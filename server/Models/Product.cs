@@ -22,6 +22,10 @@ public class Product
     public int Stock { get; set; }
     
     [Required]
+    [Range(0, int.MaxValue)]
+    public int ReservedStock { get; set; } = 0;
+    
+    [Required]
     [Column(TypeName = "decimal(10,2)")]
     [Range(0.01, double.MaxValue)]
     public decimal Price { get; set; }
@@ -31,4 +35,8 @@ public class Product
     
     // Navigation property
     public Category Category { get; set; } = null!;
+    
+    // Propiedad calculada para stock disponible
+    [NotMapped]
+    public int AvailableStock => Stock - ReservedStock;
 }

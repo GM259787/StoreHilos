@@ -63,6 +63,8 @@ public class ProductsController : ControllerBase
                 Description = p.Description,
                 ImageUrl = p.ImageUrl,
                 Stock = p.Stock,
+                ReservedStock = p.ReservedStock,
+                AvailableStock = p.Stock - p.ReservedStock,
                 Price = p.Price,
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category.Name
@@ -95,6 +97,8 @@ public class ProductsController : ControllerBase
             Description = product.Description,
             ImageUrl = product.ImageUrl,
             Stock = product.Stock,
+            ReservedStock = product.ReservedStock,
+            AvailableStock = product.AvailableStock,
             Price = product.Price,
             CategoryId = product.CategoryId,
             CategoryName = product.Category.Name
@@ -145,6 +149,8 @@ public class ProductsController : ControllerBase
                 Description = product.Description,
                 ImageUrl = product.ImageUrl,
                 Stock = product.Stock,
+                ReservedStock = product.ReservedStock,
+                AvailableStock = product.AvailableStock,
                 Price = product.Price,
                 CategoryId = product.CategoryId,
                 CategoryName = category.Name
@@ -215,6 +221,8 @@ public class ProductsController : ControllerBase
                 Description = product.Description,
                 ImageUrl = product.ImageUrl,
                 Stock = product.Stock,
+                ReservedStock = product.ReservedStock,
+                AvailableStock = product.AvailableStock,
                 Price = product.Price,
                 CategoryId = product.CategoryId,
                 CategoryName = updatedCategory?.Name ?? "Sin categoría"

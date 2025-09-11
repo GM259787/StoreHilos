@@ -11,15 +11,24 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth-storage');
+    console.log('HTTP Interceptor - Raw token from localStorage:', token);
+    
     if (token) {
       try {
         const authData = JSON.parse(token);
+        console.log('HTTP Interceptor - Parsed auth data:', authData);
+        
         if (authData.state?.token) {
           config.headers.Authorization = `Bearer ${authData.state.token}`;
+          console.log('HTTP Interceptor - Token added to headers:', authData.state.token);
+        } else {
+          console.log('HTTP Interceptor - No token found in auth data');
         }
       } catch (error) {
         console.error('Error parsing auth token:', error);
       }
+    } else {
+      console.log('HTTP Interceptor - No token found in localStorage');
     }
     return config;
   },

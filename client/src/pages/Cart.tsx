@@ -5,8 +5,10 @@ import { useAuthStore } from '../store/auth';
 import { ordersApi } from '../api/orders';
 import { cartApi } from '../api/cart';
 import { authApi } from '../api/auth';
+import { paymentApi } from '../api/payment';
 import CartItemRow from '../components/CartItemRow';
 import ShippingInfoForm, { ShippingInfo } from '../components/ShippingInfoForm';
+import { formatPrice } from '../utils/currency';
 
 const Cart = () => {
   const { items, clearCart, getTotalItems, getTotalPrice } = useCartStore();
@@ -72,19 +74,22 @@ const Cart = () => {
       // Sincronizar carrito con el backend
       await cartApi.syncCart(items);
       
-      // Usar los datos de envío del formulario o del usuario
+      // Preparar datos para la página de opciones de pago
       const orderData = {
-        shippingAddress: shippingInfo?.shippingAddress || user?.shippingAddress || '',
-        shippingCity: shippingInfo?.shippingCity || user?.shippingCity || '',
-        shippingPostalCode: shippingInfo?.shippingPostalCode || user?.shippingPostalCode || '',
-        notes: shippingInfo?.shippingInstructions || user?.shippingInstructions || 'Pedido desde el carrito'
+        total: totalPrice,
+        items: items,
+        shippingInfo: shippingInfo || {
+          shippingAddress: user?.shippingAddress || '',
+          shippingCity: user?.shippingCity || '',
+          shippingPostalCode: user?.shippingPostalCode || '',
+          shippingPhone: user?.shippingPhone || '',
+          shippingInstructions: user?.shippingInstructions || ''
+        }
       };
       
-      await ordersApi.createOrder(orderData);
+      // Redirigir a la página de opciones de pago
+      navigate('/payment', { state: orderData });
       
-      alert('¡Pedido procesado con éxito! Serás redirigido a tus pedidos.');
-      clearCart();
-      navigate('/orders');
     } catch (error: any) {
       console.error('Error procesando pedido:', error);
       console.error('Detalles del error:', {
@@ -171,12 +176,12 @@ const Cart = () => {
         <div className="space-y-2">
           <div className="flex justify-between">
             <span className="text-gray-600">Productos ({totalItems}):</span>
-            <span className="font-medium">${totalPrice.toFixed(2)}</span>
+            <span className="font-medium">{formatPrice(totalPrice)}</span>
           </div>
           <div className="border-t pt-2">
             <div className="flex justify-between">
               <span className="text-lg font-semibold text-gray-900">Total:</span>
-              <span className="text-lg font-bold text-gray-900">${totalPrice.toFixed(2)}</span>
+              <span className="text-lg font-bold text-gray-900">{formatPrice(totalPrice)}</span>
             </div>
           </div>
         </div>

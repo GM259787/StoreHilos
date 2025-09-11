@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Order } from '../types/catalog';
 import { ordersApi } from '../api/orders';
+import { formatPrice } from '../utils/currency';
 
 const Orders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -129,11 +130,11 @@ const Orders: React.FC = () => {
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{item.productName}</p>
                       <p className="text-sm text-gray-500">
-                        Cantidad: {item.quantity} × ${item.productPrice.toFixed(2)}
+                        Cantidad: {item.quantity} × {formatPrice(item.productPrice)}
                       </p>
                     </div>
                     <p className="font-semibold text-gray-900">
-                      ${item.subTotal.toFixed(2)}
+                      {formatPrice(item.subTotal)}
                     </p>
                   </div>
                 ))}
@@ -142,19 +143,15 @@ const Orders: React.FC = () => {
               <div className="border-t border-gray-200 pt-4">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="text-gray-900">${order.subTotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600">IVA (22%):</span>
-                  <span className="text-gray-900">${order.taxAmount.toFixed(2)}</span>
+                  <span className="text-gray-900">{formatPrice(order.subTotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">Envío:</span>
-                  <span className="text-gray-900">${order.shippingAmount.toFixed(2)}</span>
+                  <span className="text-gray-900">{formatPrice(order.shippingAmount)}</span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold border-t border-gray-200 pt-2">
                   <span className="text-gray-900">Total:</span>
-                  <span className="text-blue-600">${order.totalAmount.toFixed(2)}</span>
+                  <span className="text-blue-600">{formatPrice(order.totalAmount)}</span>
                 </div>
               </div>
 

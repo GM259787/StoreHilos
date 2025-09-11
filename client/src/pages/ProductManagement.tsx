@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth';
 import { catalogApi } from '../api/catalog';
 import { fileUploadApi } from '../api/fileUpload';
 import { Category, Product } from '../types/catalog';
+import { formatPrice } from '../utils/currency';
 
 // Extender el tipo ImportMeta para incluir env
 declare global {
@@ -308,7 +309,7 @@ const ProductManagement: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio *
+                    Precio (UYU) *
                   </label>
                   <input
                     type="number"
@@ -318,6 +319,7 @@ const ProductManagement: React.FC = () => {
                     value={createForm.price}
                     onChange={(e) => setCreateForm({...createForm, price: parseFloat(e.target.value)})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0.00"
                   />
                 </div>
                 <div>
@@ -417,7 +419,7 @@ const ProductManagement: React.FC = () => {
                     Categoría
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Precio
+                    Precio (UYU)
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stock
@@ -455,7 +457,7 @@ const ProductManagement: React.FC = () => {
                       {categories.find(c => c.id === product.categoryId)?.name || 'Sin categoría'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${product.price.toFixed(2)}
+                      {formatPrice(product.price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {product.stock}
@@ -519,7 +521,7 @@ const ProductManagement: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Precio
+                        Precio (UYU)
                       </label>
                       <input
                         type="number"
@@ -528,6 +530,7 @@ const ProductManagement: React.FC = () => {
                         value={updateForm.price || ''}
                         onChange={(e) => setUpdateForm({...updateForm, price: parseFloat(e.target.value)})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="0.00"
                       />
                     </div>
                     <div>

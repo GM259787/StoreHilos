@@ -18,12 +18,15 @@ export const useCartStore = create<CartStore>()(
       items: [],
       
       addItem: (item) => {
+        console.log('Store: Agregando item al carrito:', item);
         set((state) => {
           const existingItem = state.items.find(i => i.id === item.id);
+          console.log('Store: Item existente encontrado:', existingItem);
           
           if (existingItem) {
-            // Si ya existe, aumentar cantidad respetando stock
-            const newQuantity = Math.min(existingItem.quantity + 1, item.stock);
+            // Si ya existe, aumentar cantidad respetando stock disponible
+            const newQuantity = Math.min(existingItem.quantity + 1, item.availableStock);
+            console.log('Store: Actualizando cantidad a:', newQuantity);
             return {
               items: state.items.map(i => 
                 i.id === item.id 
@@ -33,6 +36,7 @@ export const useCartStore = create<CartStore>()(
             };
           } else {
             // Si no existe, agregar con cantidad 1
+            console.log('Store: Agregando nuevo item');
             return {
               items: [...state.items, { ...item, quantity: 1 }]
             };
@@ -51,8 +55,8 @@ export const useCartStore = create<CartStore>()(
           const item = state.items.find(i => i.id === id);
           if (!item) return state;
           
-          // Validar que la cantidad no exceda el stock
-          const validQuantity = Math.min(Math.max(0, quantity), item.stock);
+          // Validar que la cantidad no exceda el stock disponible
+          const validQuantity = Math.min(Math.max(0, quantity), item.availableStock);
           
           if (validQuantity === 0) {
             // Si la cantidad es 0, eliminar el item

@@ -24,7 +24,23 @@ public class CartController : ControllerBase
     {
         try
         {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"CartController - UserIdClaim: {userIdClaim}");
+            Console.WriteLine($"CartController - User.Identity.Name: {User.Identity?.Name}");
+            Console.WriteLine($"CartController - User.Identity.IsAuthenticated: {User.Identity?.IsAuthenticated}");
+            
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+            {
+                Console.WriteLine($"CartController - Usuario no válido: {userIdClaim}");
+                return Unauthorized(new { message = "Usuario no válido" });
+            }
+            
+            // Verificar que el usuario existe
+            var userExists = await _context.Users.AnyAsync(u => u.Id == userId && u.IsActive);
+            if (!userExists)
+            {
+                return NotFound(new { message = "Usuario no encontrado" });
+            }
             
             // Obtener o crear el carrito del usuario
             var cart = await _context.ShoppingCarts
@@ -36,7 +52,8 @@ public class CartController : ControllerBase
                 cart = new ShoppingCart
                 {
                     UserId = userId,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
                 };
                 _context.ShoppingCarts.Add(cart);
                 await _context.SaveChangesAsync(); // Guardar para obtener el ID
@@ -51,18 +68,33 @@ public class CartController : ControllerBase
             // Agregar nuevos items
             foreach (var itemDto in syncCartDto.Items)
             {
+                // Validar que el producto existe y está disponible
                 var product = await _context.Products.FindAsync(itemDto.ProductId);
-                if (product != null)
+                if (product == null)
                 {
-                    var cartItem = new CartItem
-                    {
-                        CartId = cart.Id,
-                        ProductId = itemDto.ProductId,
-                        Quantity = itemDto.Quantity,
-                        AddedAt = DateTime.UtcNow
-                    };
-                    _context.CartItems.Add(cartItem);
+                    return BadRequest(new { message = $"Producto con ID {itemDto.ProductId} no encontrado" });
                 }
+                
+                // Validar cantidad
+                if (itemDto.Quantity <= 0)
+                {
+                    return BadRequest(new { message = "La cantidad debe ser mayor a 0" });
+                }
+                
+                // Validar stock disponible
+                if (itemDto.Quantity > product.AvailableStock)
+                {
+                    return BadRequest(new { message = $"No hay suficiente stock para el producto {product.Name}. Disponible: {product.AvailableStock}" });
+                }
+                
+                var cartItem = new CartItem
+                {
+                    CartId = cart.Id,
+                    ProductId = itemDto.ProductId,
+                    Quantity = itemDto.Quantity,
+                    AddedAt = DateTime.UtcNow
+                };
+                _context.CartItems.Add(cartItem);
             }
 
             // Guardar los items del carrito
@@ -85,7 +117,11 @@ public class CartController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<CartItemDto>>> GetCart()
     {
-        var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+        {
+            return Unauthorized(new { message = "Usuario no válido" });
+        }
         
         var cart = await _context.ShoppingCarts
             .Include(c => c.CartItems)

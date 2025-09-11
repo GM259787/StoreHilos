@@ -10,8 +10,11 @@ export interface Product {
   description?: string;
   imageUrl?: string;
   stock: number;
+  reservedStock: number;
+  availableStock: number;
   price: number;
   categoryId: number;
+  categoryName?: string;
 }
 
 export interface Paged<T> {
@@ -27,6 +30,7 @@ export interface CartItem {
   price: number;
   imageUrl?: string;
   stock: number;
+  availableStock: number;
   quantity: number;
 }
 

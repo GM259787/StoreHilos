@@ -1,5 +1,6 @@
 import { CartItem } from '../types/catalog';
 import { useCartStore } from '../store/cart';
+import { formatPrice } from '../utils/currency';
 
 // Extender el tipo ImportMeta para incluir env
 declare global {
@@ -63,10 +64,10 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
           {item.name}
         </h3>
         <p className="text-sm text-gray-500">
-          Stock disponible: {item.stock} unidades
+          Stock disponible: {item.availableStock} unidades
         </p>
         <p className="text-lg font-semibold text-gray-900">
-          ${item.price.toFixed(2)} c/u
+          {formatPrice(item.price)} c/u
         </p>
       </div>
 
@@ -89,7 +90,7 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
             id={`cart-quantity-${item.id}`}
             type="number"
             min="0"
-            max={item.stock}
+            max={item.availableStock}
             value={item.quantity}
             onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 0)}
             className="w-16 text-center border-0 focus:ring-0 text-sm"
@@ -97,7 +98,7 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
           <button
             type="button"
             onClick={() => handleQuantityChange(item.quantity + 1)}
-            disabled={item.quantity >= item.stock}
+            disabled={item.quantity >= item.availableStock}
             className="px-3 py-1 text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Aumentar cantidad"
           >
@@ -109,10 +110,10 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
       {/* Subtotal */}
       <div className="text-right">
         <p className="text-lg font-bold text-gray-900">
-          ${subtotal.toFixed(2)}
+          {formatPrice(subtotal)}
         </p>
         <p className="text-sm text-gray-500">
-          {item.quantity} x ${item.price.toFixed(2)}
+          {item.quantity} x {formatPrice(item.price)}
         </p>
       </div>
 

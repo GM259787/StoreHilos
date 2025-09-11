@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth';
 import { adminApi } from '../api/admin';
 import { Order } from '../types/catalog';
+import { formatPrice } from '../utils/currency';
 
 const Admin = () => {
   const { user } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [confirmedOrders, setConfirmedOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'confirmed'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'confirmed'>('confirmed');
   const [processingOrder, setProcessingOrder] = useState<number | null>(null);
 
 
@@ -21,6 +22,8 @@ const Admin = () => {
   const loadOrders = async () => {
     try {
       setLoading(true);
+      
+      // Ambos roles usan el mismo endpoint, pero el backend filtra según el rol
       const [allOrders, confirmed] = await Promise.all([
         adminApi.getAllOrders(),
         adminApi.getConfirmedOrders()
@@ -122,7 +125,8 @@ const Admin = () => {
   // Determinar qué pedidos mostrar según el rol y la pestaña activa
   const getCurrentOrders = () => {
     if (user?.role === 'Armador') {
-      return confirmedOrders; // El armador solo ve pedidos confirmados
+      // El armador puede ver todos los pedidos o solo los confirmados
+      return activeTab === 'all' ? orders : confirmedOrders;
     }
     return activeTab === 'all' ? orders : confirmedOrders;
   };
@@ -213,7 +217,7 @@ const Admin = () => {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-semibold text-gray-900">
-                            ${order.totalAmount.toFixed(2)}
+                            {formatPrice(order.totalAmount)}
                           </p>
                           <div className="flex gap-2 mt-1">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
@@ -233,7 +237,7 @@ const Admin = () => {
                           {order.items.map((item) => (
                             <div key={item.id} className="flex justify-between text-sm text-gray-600">
                               <span>{item.productName} x{item.quantity}</span>
-                              <span>${item.subTotal.toFixed(2)}</span>
+                              <span>{formatPrice(item.subTotal)}</span>
                             </div>
                           ))}
                         </div>
@@ -243,7 +247,7 @@ const Admin = () => {
 
                       {/* Actions */}
                       <div className="mt-4 flex gap-2">
-                        {user.role === 'Armador' && (
+                        {(user.role === 'Armador' || user.role === 'Cobrador') && (
                           <select
                             value={order.status}
                             onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
