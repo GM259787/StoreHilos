@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth';
 import { categoriesApi } from '../api/categories';
 import { Category, CreateCategoryData, UpdateCategoryData } from '../types/categories';

@@ -27,9 +27,20 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configurar Entity Framework con SQLite
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+// Configurar Entity Framework - SQLite para desarrollo local, PostgreSQL para Docker
+var connectionString = builder.Configuration.GetConnectionString("Default");
+if (connectionString.Contains("Host=db"))
+{
+    // PostgreSQL para Docker
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
+else
+{
+    // SQLite para desarrollo local
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite(connectionString));
+}
 
 // Configurar JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");

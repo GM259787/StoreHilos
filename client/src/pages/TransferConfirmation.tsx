@@ -31,13 +31,13 @@ const TransferConfirmation: React.FC = () => {
 
       // Crear el pedido con método de transferencia
       const orderData = {
-        items: transferData.items,
-        shippingInfo: transferData.shippingInfo,
-        paymentMethod: 'transferencia',
+        shippingAddress: transferData.shippingInfo.shippingAddress,
+        shippingCity: transferData.shippingInfo.shippingCity,
+        shippingPostalCode: transferData.shippingInfo.shippingPostalCode,
         notes: 'Pedido con transferencia bancaria'
       };
 
-      const order = await ordersApi.createOrder(orderData);
+      await ordersApi.createOrder(orderData);
       
       // Limpiar el carrito
       clearCart();

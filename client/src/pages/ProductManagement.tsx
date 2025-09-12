@@ -5,14 +5,6 @@ import { fileUploadApi } from '../api/fileUpload';
 import { Category, Product } from '../types/catalog';
 import { formatPrice } from '../utils/currency';
 
-// Extender el tipo ImportMeta para incluir env
-declare global {
-  interface ImportMeta {
-    readonly env: {
-      readonly VITE_API_URL?: string;
-    };
-  }
-}
 
 interface CreateProductForm {
   name: string;

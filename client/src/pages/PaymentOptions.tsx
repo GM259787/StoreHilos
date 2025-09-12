@@ -18,7 +18,6 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
   const { user } = useAuthStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<string>('');
-  const [isAvailable, setIsAvailable] = useState(false);
   
   // Obtener datos del pedido desde el estado de navegación
   const orderData = location.state as PaymentOptionsProps['orderData'];
@@ -118,7 +117,7 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
         <h2 className="text-lg font-semibold text-gray-900">Métodos de pago disponibles</h2>
         
         {/* Mercado Pago */}
-        {isAvailable && <div 
+        <div 
           className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
             selectedPayment === 'mercadopago' 
               ? 'border-blue-500 bg-blue-50' 
@@ -148,7 +147,6 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
             </div>
           </div>
         </div>
-        }
         {/* Transferencia bancaria */}
         <div 
           className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${

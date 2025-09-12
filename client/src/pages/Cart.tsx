@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cart';
 import { useAuthStore } from '../store/auth';
-import { ordersApi } from '../api/orders';
 import { cartApi } from '../api/cart';
 import { authApi } from '../api/auth';
-import { paymentApi } from '../api/payment';
 import CartItemRow from '../components/CartItemRow';
 import ShippingInfoForm, { ShippingInfo } from '../components/ShippingInfoForm';
 import { formatPrice } from '../utils/currency';

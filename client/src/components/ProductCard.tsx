@@ -3,14 +3,6 @@ import { Product } from '../types/catalog';
 import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
 
-// Extender el tipo ImportMeta para incluir env
-declare global {
-  interface ImportMeta {
-    readonly env: {
-      readonly VITE_API_URL?: string;
-    };
-  }
-}
 
 interface ProductCardProps {
   product: Product;
