@@ -7,6 +7,7 @@ import { authApi } from '../api/auth';
 import CartItemRow from '../components/CartItemRow';
 import ShippingInfoForm, { ShippingInfo } from '../components/ShippingInfoForm';
 import { formatPrice } from '../utils/currency';
+import { showError, showWarning } from '../utils/alerts';
 
 const Cart = () => {
   const { items, clearCart, getTotalItems, getTotalPrice } = useCartStore();
@@ -26,13 +27,13 @@ const Cart = () => {
 
   const handleAdvanceOrder = async () => {
     if (!isAuthenticated) {
-      alert('Debes iniciar sesión para continuar con el pedido.');
+      showWarning('Acceso requerido', 'Debes iniciar sesión para continuar con el pedido.');
       navigate('/auth');
       return;
     }
     
     if (items.length === 0) {
-      alert('El carrito está vacío.');
+      showWarning('Carrito vacío', 'El carrito está vacío.');
       return;
     }
 
@@ -59,7 +60,7 @@ const Cart = () => {
       await processOrder(shippingInfo);
     } catch (error) {
       console.error('Error actualizando datos de envío:', error);
-      alert('Error al guardar los datos de envío. Por favor, intenta nuevamente.');
+      showError('Error al guardar', 'Error al guardar los datos de envío. Por favor, intenta nuevamente.');
     } finally {
       setIsProcessing(false);
     }
@@ -95,7 +96,7 @@ const Cart = () => {
         response: error.response?.data,
         status: error.response?.status
       });
-      alert(`Error al procesar el pedido: ${error.response?.data?.message || error.message}. Por favor, intenta nuevamente.`);
+      showError('Error al procesar pedido', `Error al procesar el pedido: ${error.response?.data?.message || error.message}. Por favor, intenta nuevamente.`);
     } finally {
       setIsProcessing(false);
     }

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCartStore } from '../store/cart';
 import { ordersApi } from '../api/orders';
 import { formatPrice } from '../utils/currency';
+import { showError } from '../utils/alerts';
 
 interface TransferData {
   method: string;
@@ -45,7 +46,7 @@ const TransferConfirmation: React.FC = () => {
       setOrderCreated(true);
     } catch (error: any) {
       console.error('Error creando pedido:', error);
-      alert(`Error al crear el pedido: ${error.response?.data?.message || error.message}`);
+      showError('Error al crear pedido', `Error al crear el pedido: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsProcessing(false);
     }

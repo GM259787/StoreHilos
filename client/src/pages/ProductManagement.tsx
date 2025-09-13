@@ -4,6 +4,7 @@ import { catalogApi } from '../api/catalog';
 import { fileUploadApi } from '../api/fileUpload';
 import { Category, Product } from '../types/catalog';
 import { formatPrice } from '../utils/currency';
+import { showError, showSuccess, showDeleteConfirm } from '../utils/alerts';
 
 
 interface CreateProductForm {
@@ -117,7 +118,7 @@ const ProductManagement: React.FC = () => {
           const uploadResult = await fileUploadApi.uploadImage(selectedImage);
           imageUrl = uploadResult.fileUrl;
         } catch (uploadErr: any) {
-          alert(`Error al subir la imagen: ${uploadErr.response?.data?.message || uploadErr.message}`);
+          showError('Error al subir imagen', `Error al subir la imagen: ${uploadErr.response?.data?.message || uploadErr.message}`);
           setUploadingImage(false);
           return;
         }
@@ -146,9 +147,9 @@ const ProductManagement: React.FC = () => {
       setImagePreview(null);
       setShowCreateForm(false);
       
-      alert('Producto creado exitosamente');
+      showSuccess('¡Producto creado!', 'El producto se ha creado exitosamente');
     } catch (err: any) {
-      alert(`Error al crear producto: ${err.response?.data?.message || err.message}`);
+      showError('Error al crear producto', `Error al crear producto: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -166,7 +167,7 @@ const ProductManagement: React.FC = () => {
           const uploadResult = await fileUploadApi.uploadImage(editingImage);
           imageUrl = uploadResult.fileUrl;
         } catch (uploadErr: any) {
-          alert(`Error al subir la imagen: ${uploadErr.response?.data?.message || uploadErr.message}`);
+          showError('Error al subir imagen', `Error al subir la imagen: ${uploadErr.response?.data?.message || uploadErr.message}`);
           setUpdatingImage(false);
           return;
         }
@@ -188,21 +189,22 @@ const ProductManagement: React.FC = () => {
       setEditingImage(null);
       setEditingImagePreview(null);
       
-      alert('Producto actualizado exitosamente');
+      showSuccess('¡Producto actualizado!', 'El producto se ha actualizado exitosamente');
     } catch (err: any) {
-      alert(`Error al actualizar producto: ${err.response?.data?.message || err.message}`);
+      showError('Error al actualizar producto', `Error al actualizar producto: ${err.response?.data?.message || err.message}`);
     }
   };
 
   const handleDeleteProduct = async (productId: number) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
+    const result = await showDeleteConfirm('Eliminar producto', '¿Estás seguro de que quieres eliminar este producto?');
+    if (!result.isConfirmed) return;
 
     try {
       await catalogApi.deleteProduct(productId);
       setProducts(products.filter(p => p.id !== productId));
-      alert('Producto eliminado exitosamente');
+      showSuccess('¡Producto eliminado!', 'El producto se ha eliminado exitosamente');
     } catch (err: any) {
-      alert(`Error al eliminar producto: ${err.response?.data?.message || err.message}`);
+      showError('Error al eliminar producto', `Error al eliminar producto: ${err.response?.data?.message || err.message}`);
     }
   };
 

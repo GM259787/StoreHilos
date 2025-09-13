@@ -100,14 +100,78 @@ app.MapGet("/test", () => "Hello World!");
 // Endpoint de health
 app.MapGet("/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
 
-// Migrar base de datos
+// Migrar base de datos solo si es necesario
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    context.Database.Migrate();
     
-    // Seed de datos
-    await Seed.SeedDataAsync(context);
+    try
+    {
+        // Verificar si la base de datos existe y tiene tablas
+        var pendingMigrations = context.Database.GetPendingMigrations().ToList();
+        
+        if (pendingMigrations.Any())
+        {
+            Console.WriteLine($"Aplicando {pendingMigrations.Count} migraciones pendientes...");
+            context.Database.Migrate();
+            Console.WriteLine("Migraciones aplicadas exitosamente.");
+        }
+        else
+        {
+            Console.WriteLine("Base de datos está actualizada, no se requieren migraciones.");
+        }
+    }
+    catch (Exception ex) when (ex.Message.Contains("already exists"))
+    {
+        Console.WriteLine("⚠️  Las tablas ya existen, creando tabla de migraciones manualmente...");
+        
+        // Crear la tabla de migraciones si no existe
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync(@"
+                CREATE TABLE IF NOT EXISTS `__EFMigrationsHistory` (
+                    `MigrationId` varchar(150) CHARACTER SET utf8mb4 NOT NULL,
+                    `ProductVersion` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
+                    CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
+                ) CHARACTER SET=utf8mb4;
+            ");
+            
+            // Insertar la migración actual
+            await context.Database.ExecuteSqlRawAsync(@"
+                INSERT IGNORE INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`) 
+                VALUES ('20250913045827_InitialCreate', '8.0.4');
+            ");
+            
+            Console.WriteLine("✅ Tabla de migraciones creada y configurada.");
+        }
+        catch (Exception migrationEx)
+        {
+            Console.WriteLine($"❌ Error configurando migraciones: {migrationEx.Message}");
+        }
+    }
+    
+    // Verificar si ya hay datos en la base de datos
+    try
+    {
+        var hasCategories = await context.Categories.AnyAsync();
+        var hasRoles = await context.Roles.AnyAsync();
+        
+        if (!hasCategories || !hasRoles)
+        {
+            Console.WriteLine("Inicializando datos de la base de datos...");
+            await Seed.SeedDataAsync(context);
+            Console.WriteLine("Datos inicializados exitosamente.");
+        }
+        else
+        {
+            Console.WriteLine("Base de datos ya contiene datos, omitiendo inicialización.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"⚠️  Error verificando datos: {ex.Message}");
+        Console.WriteLine("Continuando sin inicializar datos...");
+    }
 }
 
 app.Run();

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/auth';
+import { showError } from '../utils/alerts';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -28,7 +29,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     clearError();
     
     if (formData.password !== formData.confirmPassword) {
-      alert('Las contraseñas no coinciden');
+      showError('Contraseñas no coinciden', 'Las contraseñas no coinciden');
       return;
     }
     

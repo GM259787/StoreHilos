@@ -136,8 +136,8 @@ public class OrdersController : ControllerBase
 
         // Calcular totales
         var subTotal = cart.CartItems.Sum(ci => ci.Product.Price * ci.Quantity);
-        var taxAmount = subTotal * 0.22m; // 22% IVA
-        var shippingAmount = 5.99m; // Costo de envío fijo
+        var taxAmount = 0m; // Por ahora sin impuestos
+        var shippingAmount = 0m; // Por ahora sin costo de envío
         var totalAmount = subTotal + taxAmount + shippingAmount;
 
         // Crear el pedido

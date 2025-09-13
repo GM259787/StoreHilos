@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { paymentApi } from '../api/payment';
 import { formatPrice } from '../utils/currency';
+import { showError, showWarning } from '../utils/alerts';
 
 interface PaymentOptionsProps {
   orderData?: {
@@ -29,7 +30,7 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
 
   const handlePaymentMethod = async (method: string) => {
     if (!selectedPayment) {
-      alert('Por favor selecciona un método de pago');
+      showWarning('Método de pago requerido', 'Por favor selecciona un método de pago');
       return;
     }
 
@@ -65,7 +66,7 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
       }
     } catch (error: any) {
       console.error('Error procesando pago:', error);
-      alert(`Error al procesar el pago: ${error.response?.data?.message || error.message}`);
+      showError('Error al procesar pago', `Error al procesar el pago: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsProcessing(false);
     }

@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth';
 import { adminApi } from '../api/admin';
 import { Order } from '../types/catalog';
 import { formatPrice } from '../utils/currency';
+import { showError, showSuccess, showWarning, showConfirm } from '../utils/alerts';
 
 const Admin = () => {
   const { user } = useAuthStore();
@@ -32,7 +33,7 @@ const Admin = () => {
       setConfirmedOrders(confirmed);
     } catch (error) {
       console.error('Error cargando pedidos:', error);
-      alert('Error al cargar los pedidos');
+      showError('Error al cargar pedidos', 'Error al cargar los pedidos');
     } finally {
       setLoading(false);
     }
@@ -40,22 +41,23 @@ const Admin = () => {
 
   const handleMarkAsPaid = async (orderId: number) => {
     if (user?.role !== 'Cobrador') {
-      alert('Solo los cobradores pueden marcar pedidos como pagados');
+      showWarning('Acceso denegado', 'Solo los cobradores pueden marcar pedidos como pagados');
       return;
     }
 
-    if (!confirm('¿Estás seguro de que quieres marcar este pedido como pagado?')) {
+    const result = await showConfirm('Confirmar pago', '¿Estás seguro de que quieres marcar este pedido como pagado?');
+    if (!result.isConfirmed) {
       return;
     }
 
     try {
       setProcessingOrder(orderId);
       await adminApi.markOrderAsPaid(orderId);
-      alert('Pedido marcado como pagado exitosamente');
+      showSuccess('¡Pedido pagado!', 'El pedido se ha marcado como pagado exitosamente');
       loadOrders(); // Recargar datos
     } catch (error) {
       console.error('Error marcando pedido como pagado:', error);
-      alert('Error al marcar el pedido como pagado');
+      showError('Error al marcar como pagado', 'Error al marcar el pedido como pagado');
     } finally {
       setProcessingOrder(null);
     }
@@ -63,7 +65,7 @@ const Admin = () => {
 
   const handleUpdateStatus = async (orderId: number, newStatus: string) => {
     if (user?.role !== 'Armador') {
-      alert('Solo los armadores pueden cambiar el estado de los pedidos');
+      showWarning('Acceso denegado', 'Solo los armadores pueden cambiar el estado de los pedidos');
       return;
     }
 
@@ -71,11 +73,11 @@ const Admin = () => {
       setProcessingOrder(orderId);
       
       await adminApi.updateOrderStatus(orderId, newStatus);
-      alert('Estado del pedido actualizado exitosamente');
+      showSuccess('¡Estado actualizado!', 'El estado del pedido se ha actualizado exitosamente');
       loadOrders(); // Recargar datos
     } catch (error) {
       console.error('Error actualizando estado:', error);
-      alert('Error al actualizar el estado del pedido');
+      showError('Error al actualizar estado', 'Error al actualizar el estado del pedido');
     } finally {
       setProcessingOrder(null);
     }
