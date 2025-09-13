@@ -10,26 +10,16 @@ public static class Seed
         // En desarrollo, siempre cargar datos de ejemplo
         // Limpiar datos existentes primero (en orden correcto para evitar restricciones de FK)
         
-        // Deshabilitar temporalmente las restricciones de FK
-        await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = OFF;");
-        
-        try
-        {
-            context.CartItems.RemoveRange(context.CartItems);
-            context.ShoppingCarts.RemoveRange(context.ShoppingCarts);
-            context.OrderItems.RemoveRange(context.OrderItems);
-            context.Orders.RemoveRange(context.Orders);
-            context.Products.RemoveRange(context.Products);
-            context.Users.RemoveRange(context.Users);
-            context.Roles.RemoveRange(context.Roles);
-            context.Categories.RemoveRange(context.Categories);
-            await context.SaveChangesAsync();
-        }
-        finally
-        {
-            // Rehabilitar las restricciones de FK
-            await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON;");
-        }
+        // Limpiar datos existentes (Entity Framework maneja las restricciones de FK automáticamente)
+        context.CartItems.RemoveRange(context.CartItems);
+        context.ShoppingCarts.RemoveRange(context.ShoppingCarts);
+        context.OrderItems.RemoveRange(context.OrderItems);
+        context.Orders.RemoveRange(context.Orders);
+        context.Products.RemoveRange(context.Products);
+        context.Users.RemoveRange(context.Users);
+        context.Roles.RemoveRange(context.Roles);
+        context.Categories.RemoveRange(context.Categories);
+        await context.SaveChangesAsync();
 
         // Crear categorías de hilos por milimetraje
         var categories = new List<Category>

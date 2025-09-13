@@ -27,7 +27,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configurar Entity Framework - SQLite para desarrollo local, PostgreSQL para Docker
+// Configurar Entity Framework - MySQL para desarrollo local, PostgreSQL para Docker
 var connectionString = builder.Configuration.GetConnectionString("Default");
 if (connectionString.Contains("Host=db"))
 {
@@ -37,9 +37,9 @@ if (connectionString.Contains("Host=db"))
 }
 else
 {
-    // SQLite para desarrollo local
+    // MySQL para desarrollo local y producción
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseSqlite(connectionString));
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 }
 
 // Configurar JWT Authentication
