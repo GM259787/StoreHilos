@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Product } from '../types/catalog';
 import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
+import { useCartSync } from '../hooks/useCartSync';
 
 
 interface ProductCardProps {
@@ -11,6 +12,9 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCartStore();
+  
+  // Sincronizar precios del carrito con el catálogo actual
+  useCartSync();
   
   // URL base del backend para las imágenes
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';

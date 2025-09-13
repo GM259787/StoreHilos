@@ -8,6 +8,7 @@ import CartItemRow from '../components/CartItemRow';
 import ShippingInfoForm, { ShippingInfo } from '../components/ShippingInfoForm';
 import { formatPrice } from '../utils/currency';
 import { showError, showWarning } from '../utils/alerts';
+import { useCartSync } from '../hooks/useCartSync';
 
 const Cart = () => {
   const { items, clearCart, getTotalItems, getTotalPrice } = useCartStore();
@@ -16,8 +17,15 @@ const Cart = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showShippingForm, setShowShippingForm] = useState(false);
   
+  // Sincronizar precios del carrito con el catálogo actual
+  useCartSync();
+  
   const totalItems = getTotalItems();
   const totalPrice = getTotalPrice();
+  
+  // Calcular costo de envío: gratis a partir de $2000, sino $150
+  const shippingCost = totalPrice >= 2000 ? 0 : 150;
+  const finalTotal = totalPrice + shippingCost;
 
   const handleClearCart = () => {
     if (window.confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
@@ -75,7 +83,7 @@ const Cart = () => {
       
       // Preparar datos para la página de opciones de pago
       const orderData = {
-        total: totalPrice,
+        total: finalTotal,
         items: items,
         shippingInfo: shippingInfo || {
           shippingAddress: user?.shippingAddress || '',
@@ -135,6 +143,25 @@ const Cart = () => {
         <p className="mt-2 text-gray-600">
           {totalItems} {totalItems === 1 ? 'producto' : 'productos'} en tu carrito
         </p>
+        
+        {/* Leyenda de envío gratis */}
+        <div className="mt-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-semibold text-green-800">
+                🚚 ¡Envío GRATIS a partir de $2000!
+              </h3>
+              <p className="text-sm text-green-700 mt-1">
+                Lleva productos por $2000 o más y no pagues envío.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Lista de productos */}
@@ -177,10 +204,36 @@ const Cart = () => {
             <span className="text-gray-600">Productos ({totalItems}):</span>
             <span className="font-medium">{formatPrice(totalPrice)}</span>
           </div>
+          
+          <div className="flex justify-between">
+            <span className="text-gray-600">Envío:</span>
+            <span className="font-medium">
+              {shippingCost === 0 ? (
+                <span className="text-green-600 font-semibold">¡GRATIS!</span>
+              ) : (
+                formatPrice(shippingCost)
+              )}
+            </span>
+          </div>
+          
+          {totalPrice < 2000 && (
+            <div className="text-sm text-blue-600 bg-blue-50 border border-blue-200 p-3 rounded-lg">
+              <div className="flex items-center">
+                <span className="text-lg mr-2">💡</span>
+                <span className="font-medium">
+                  Agrega ${(2000 - totalPrice).toLocaleString()} más para envío gratis
+                </span>
+              </div>
+              <p className="text-xs text-blue-500 mt-1">
+                Ahorra $150 en envío
+              </p>
+            </div>
+          )}
+          
           <div className="border-t pt-2">
             <div className="flex justify-between">
               <span className="text-lg font-semibold text-gray-900">Total:</span>
-              <span className="text-lg font-bold text-gray-900">{formatPrice(totalPrice)}</span>
+              <span className="text-lg font-bold text-gray-900">{formatPrice(finalTotal)}</span>
             </div>
           </div>
         </div>
