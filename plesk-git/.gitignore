@@ -1,0 +1,30 @@
+﻿# Archivos de build
+bin/
+obj/
+*.user
+*.suo
+*.cache
+
+# Logs
+logs/
+*.log
+
+# Base de datos local
+*.db
+*.db-shm
+*.db-wal
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de configuración local
+appsettings.Development.json
+appsettings.Local.json
+
+# Node modules (si se incluyen)
+node_modules/
+
+# Archivos de Plesk
+plesk-deploy/
+plesk-git/

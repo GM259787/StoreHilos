@@ -117,7 +117,8 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
       <div className="space-y-4 mb-8">
         <h2 className="text-lg font-semibold text-gray-900">Métodos de pago disponibles</h2>
         
-        {/* Mercado Pago */}
+        {/* Mercado Pago - Opción de pago online con múltiples métodos disponibles */}
+        {/* 
         <div 
           className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
             selectedPayment === 'mercadopago' 
@@ -148,6 +149,7 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
             </div>
           </div>
         </div>
+        */}
         {/* Transferencia bancaria */}
         <div 
           className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${

@@ -1,0 +1,66 @@
+# 🔧 Variables de Entorno para Plesk
+# Configurar en Plesk Panel > Aplicaciones > Tu App > Variables de Entorno
+
+# ==============================================
+# VARIABLES OBLIGATORIAS
+# ==============================================
+
+# Entorno de la aplicación
+ASPNETCORE_ENVIRONMENT=Plesk
+
+# URL de la aplicación
+ASPNETCORE_URLS=http://+:80
+
+# ==============================================
+# VARIABLES OPCIONALES (si usas variables de entorno en lugar de appsettings)
+# ==============================================
+
+# Base de datos (recomendado usar appsettings.Plesk.json)
+# MYSQL_USER=app_user
+# MYSQL_PASSWORD=tu_password_seguro
+# MYSQL_DATABASE=AppDb
+# MYSQL_HOST=localhost
+
+# JWT (recomendado usar appsettings.Plesk.json)
+# JWT_KEY=tu_clave_jwt_super_secreta_de_al_menos_32_caracteres
+# JWT_ISSUER=https://tudominio.com
+# JWT_AUDIENCE=https://tudominio.com
+
+# MercadoPago (recomendado usar appsettings.Plesk.json)
+# MERCADOPAGO_ACCESS_TOKEN=APP_USR-1234567890abcdef1234567890abcdef-12345678
+# MERCADOPAGO_PUBLIC_KEY=APP_USR-12345678-1234-1234-1234-123456789012
+# MERCADOPAGO_WEBHOOK_SECRET=tu_webhook_secret_aqui
+
+# URLs (recomendado usar appsettings.Plesk.json)
+# FRONTEND_URL=https://tudominio.com
+# BACKEND_URL=https://tudominio.com
+
+# ==============================================
+# INSTRUCCIONES DE CONFIGURACIÓN
+# ==============================================
+
+/*
+PASOS PARA CONFIGURAR EN PLESK:
+
+1. Ir a "Sitios Web y Dominios"
+2. Seleccionar tu dominio
+3. Ir a "Aplicaciones"
+4. Seleccionar tu aplicación .NET Core
+5. Hacer clic en "Configuración"
+6. En "Variables de Entorno", agregar:
+   - Nombre: ASPNETCORE_ENVIRONMENT
+   - Valor: Plesk
+   - Hacer clic en "Agregar"
+   
+   - Nombre: ASPNETCORE_URLS
+   - Valor: http://+:80
+   - Hacer clic en "Agregar"
+
+7. Hacer clic en "Aceptar"
+
+NOTAS IMPORTANTES:
+- Las variables de entorno tienen prioridad sobre appsettings.json
+- Si configuras variables de entorno, no necesitas modificar appsettings.Plesk.json
+- Es más seguro usar appsettings.Plesk.json para credenciales sensibles
+- Las variables de entorno son visibles en el panel de Plesk
+*/

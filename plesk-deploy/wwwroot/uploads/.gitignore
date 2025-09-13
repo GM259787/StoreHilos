@@ -1,0 +1,3 @@
+# Excluir todas las imágenes subidas por los usuarios
+products/*
+!products/.gitkeep

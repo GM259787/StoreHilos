@@ -1,0 +1,23 @@
+﻿# Variables de entorno para Plesk
+# Configurar en Plesk Panel > Variables de Entorno
+
+ASPNETCORE_ENVIRONMENT=Plesk
+ASPNETCORE_URLS=http://+:80
+
+# Base de datos (ya configurada en appsettings.Plesk.json)
+# MYSQL_USER=app_user
+# MYSQL_PASSWORD=St0r3H1l0s!!
+
+# JWT (ya configurado en appsettings.Plesk.json)
+# JWT_KEY=cZIw9eEW_PZ9Ue2N1Yz0Hk3Q1Xqj8T8g5d7u0f6_6r6v8JgCk6g1v0uWk0gPIl9m4D6Q1e0cA8uGmF0p2w8mC7k0R2m4Xx0Vt6sQ
+# JWT_ISSUER=https://storehilos.uy
+# JWT_AUDIENCE=https://storehilos.uy
+
+# MercadoPago (ya configurado en appsettings.Plesk.json)
+# MERCADOPAGO_ACCESS_TOKEN=APP_USR-TEST-1234567890abcdef1234567890abcdef-12345678
+# MERCADOPAGO_PUBLIC_KEY=APP_USR-TEST-12345678-1234-1234-1234-123456789012
+# MERCADOPAGO_WEBHOOK_SECRET=test_webhook_secret_placeholder
+
+# URLs (ya configuradas en appsettings.Plesk.json)
+# FRONTEND_URL=https://storehilos.uy
+# BACKEND_URL=https://storehilos.uy
