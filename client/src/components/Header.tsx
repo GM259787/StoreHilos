@@ -21,12 +21,12 @@ const Header: React.FC = () => {
           {/* Logo y nombre */}
           <Link to="/" className="flex items-center space-x-3">
             <img
-              src="https://picsum.photos/seed/logo/80/80"
-              alt="Logo"
-              className="h-8 w-8 rounded-full"
+              src="/logo-store-hilos-small.svg"
+              alt="Store_Hilos Logo"
+              className="h-12 w-12"
             />
             <span className="text-xl font-bold text-gray-900">
-              Mi Tienda
+              Store Hilos
             </span>
           </Link>
 

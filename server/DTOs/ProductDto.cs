@@ -12,6 +12,14 @@ public class ProductDto
     public decimal Price { get; set; }
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
+    
+    // Campos para descuento por cantidad
+    public bool HasQuantityDiscount { get; set; }
+    public int? MinQuantityForDiscount { get; set; }
+    public decimal? DiscountedPrice { get; set; }
+    public DateTime? DiscountStartDate { get; set; }
+    public DateTime? DiscountEndDate { get; set; }
+    public bool IsDiscountActive { get; set; }
 }
 
 public class CreateProductDto
@@ -32,4 +40,11 @@ public class UpdateProductDto
     public int? Stock { get; set; }
     public decimal? Price { get; set; }
     public int? CategoryId { get; set; }
+    
+    // Campos para descuento por cantidad
+    public bool? HasQuantityDiscount { get; set; }
+    public int? MinQuantityForDiscount { get; set; }
+    public decimal? DiscountedPrice { get; set; }
+    public DateTime? DiscountStartDate { get; set; }
+    public DateTime? DiscountEndDate { get; set; }
 }

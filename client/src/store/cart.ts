@@ -8,6 +8,8 @@ interface CartStore {
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
   updateItemPrice: (id: number, newPrice: number) => void;
+  recalculateDiscounts: (productData: { id: number; minQuantityForDiscount?: number; discountedPrice?: number; originalPrice: number; isDiscountActive: boolean }[]) => void;
+  forceSync: () => void;
   clearCart: () => void;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -39,7 +41,13 @@ export const useCartStore = create<CartStore>()(
             // Si no existe, agregar con cantidad 1
             console.log('Store: Agregando nuevo item');
             return {
-              items: [...state.items, { ...item, quantity: 1 }]
+              items: [...state.items, { 
+                ...item, 
+                quantity: 1,
+                originalPrice: item.originalPrice || item.price,
+                hasDiscount: item.hasDiscount || false,
+                discountApplied: item.discountApplied || false
+              }]
             };
           }
         });
@@ -80,6 +88,46 @@ export const useCartStore = create<CartStore>()(
             i.id === id ? { ...i, price: newPrice } : i
           )
         }));
+      },
+
+      recalculateDiscounts: (productData) => {
+        set((state) => ({
+          items: state.items.map(item => {
+            const product = productData.find(p => p.id === item.id);
+            if (!product) {
+              return item;
+            }
+
+            // Si el producto no tiene descuento activo, usar precio original
+            if (!product.isDiscountActive || !product.minQuantityForDiscount || !product.discountedPrice) {
+              return {
+                ...item,
+                price: product.originalPrice,
+                originalPrice: product.originalPrice,
+                hasDiscount: false,
+                discountApplied: false
+              };
+            }
+
+            // Recalcular si se debe aplicar descuento
+            const shouldApplyDiscount = item.quantity >= product.minQuantityForDiscount;
+            const newPrice = shouldApplyDiscount ? product.discountedPrice : product.originalPrice;
+
+            return {
+              ...item,
+              price: newPrice,
+              originalPrice: product.originalPrice,
+              hasDiscount: product.isDiscountActive,
+              discountApplied: shouldApplyDiscount
+            };
+          })
+        }));
+      },
+
+      forceSync: () => {
+        // Esta función se puede llamar desde componentes externos para forzar sincronización
+        // La implementación real se maneja en el hook useCartSync
+        console.log('Forzando sincronización del carrito...');
       },
       
       clearCart: () => {

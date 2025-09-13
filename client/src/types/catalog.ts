@@ -15,6 +15,14 @@ export interface Product {
   price: number;
   categoryId: number;
   categoryName?: string;
+  
+  // Campos para descuento por cantidad
+  hasQuantityDiscount: boolean;
+  minQuantityForDiscount?: number;
+  discountedPrice?: number;
+  discountStartDate?: string;
+  discountEndDate?: string;
+  isDiscountActive: boolean;
 }
 
 export interface Paged<T> {
@@ -32,6 +40,11 @@ export interface CartItem {
   stock: number;
   availableStock: number;
   quantity: number;
+  
+  // Campos para descuentos
+  originalPrice?: number;
+  hasDiscount?: boolean;
+  discountApplied?: boolean;
 }
 
 export interface ProductFilters {

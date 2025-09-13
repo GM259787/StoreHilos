@@ -230,8 +230,8 @@ public class AdminController : ControllerBase
         if (user == null)
             return Unauthorized();
 
-        // Solo armadores pueden cambiar el estado
-        if (user.Role.Name != "Armador")
+        // Solo armadores y cobradores pueden cambiar el estado
+        if (user.Role.Name != "Armador" && user.Role.Name != "Cobrador")
             return Forbid();
 
         var order = await _context.Orders.FindAsync(id);

@@ -67,7 +67,17 @@ public class ProductsController : ControllerBase
                 AvailableStock = p.Stock - p.ReservedStock,
                 Price = p.Price,
                 CategoryId = p.CategoryId,
-                CategoryName = p.Category.Name
+                CategoryName = p.Category.Name,
+                HasQuantityDiscount = p.HasQuantityDiscount,
+                MinQuantityForDiscount = p.MinQuantityForDiscount,
+                DiscountedPrice = p.DiscountedPrice,
+                DiscountStartDate = p.DiscountStartDate,
+                DiscountEndDate = p.DiscountEndDate,
+                IsDiscountActive = p.HasQuantityDiscount && 
+                    p.MinQuantityForDiscount.HasValue && 
+                    p.DiscountedPrice.HasValue &&
+                    (!p.DiscountStartDate.HasValue || p.DiscountStartDate.Value <= DateTime.Now) &&
+                    (!p.DiscountEndDate.HasValue || p.DiscountEndDate.Value >= DateTime.Now)
             })
             .ToListAsync();
 
@@ -101,7 +111,13 @@ public class ProductsController : ControllerBase
             AvailableStock = product.AvailableStock,
             Price = product.Price,
             CategoryId = product.CategoryId,
-            CategoryName = product.Category.Name
+            CategoryName = product.Category.Name,
+            HasQuantityDiscount = product.HasQuantityDiscount,
+            MinQuantityForDiscount = product.MinQuantityForDiscount,
+            DiscountedPrice = product.DiscountedPrice,
+            DiscountStartDate = product.DiscountStartDate,
+            DiscountEndDate = product.DiscountEndDate,
+            IsDiscountActive = product.IsDiscountActive
         });
     }
 
@@ -209,6 +225,30 @@ public class ProductsController : ControllerBase
                 product.Price = updateProductDto.Price.Value;
             }
 
+            // Actualizar campos de descuento por cantidad
+            if (updateProductDto.HasQuantityDiscount.HasValue)
+                product.HasQuantityDiscount = updateProductDto.HasQuantityDiscount.Value;
+
+            if (updateProductDto.MinQuantityForDiscount.HasValue)
+            {
+                if (updateProductDto.MinQuantityForDiscount.Value <= 0)
+                    return BadRequest(new { message = "La cantidad mínima para descuento debe ser mayor a 0" });
+                product.MinQuantityForDiscount = updateProductDto.MinQuantityForDiscount.Value;
+            }
+
+            if (updateProductDto.DiscountedPrice.HasValue)
+            {
+                if (updateProductDto.DiscountedPrice.Value <= 0)
+                    return BadRequest(new { message = "El precio con descuento debe ser mayor a 0" });
+                product.DiscountedPrice = updateProductDto.DiscountedPrice.Value;
+            }
+
+            if (updateProductDto.DiscountStartDate.HasValue)
+                product.DiscountStartDate = updateProductDto.DiscountStartDate.Value;
+
+            if (updateProductDto.DiscountEndDate.HasValue)
+                product.DiscountEndDate = updateProductDto.DiscountEndDate.Value;
+
             await _context.SaveChangesAsync();
 
             // Obtener la categoría actualizada para la respuesta
@@ -225,7 +265,13 @@ public class ProductsController : ControllerBase
                 AvailableStock = product.AvailableStock,
                 Price = product.Price,
                 CategoryId = product.CategoryId,
-                CategoryName = updatedCategory?.Name ?? "Sin categoría"
+                CategoryName = updatedCategory?.Name ?? "Sin categoría",
+                HasQuantityDiscount = product.HasQuantityDiscount,
+                MinQuantityForDiscount = product.MinQuantityForDiscount,
+                DiscountedPrice = product.DiscountedPrice,
+                DiscountStartDate = product.DiscountStartDate,
+                DiscountEndDate = product.DiscountEndDate,
+                IsDiscountActive = product.IsDiscountActive
             });
         }
         catch (Exception ex)

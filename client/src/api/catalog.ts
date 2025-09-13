@@ -42,6 +42,11 @@ export const catalogApi = {
     stock?: number;
     price?: number;
     categoryId?: number;
+    hasQuantityDiscount?: boolean;
+    minQuantityForDiscount?: number;
+    discountedPrice?: number;
+    discountStartDate?: string;
+    discountEndDate?: string;
   }): Promise<Product> => {
     const response = await api.put(`/api/products/${id}`, product);
     return response.data;

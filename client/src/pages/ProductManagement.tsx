@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/auth';
+import { useCartStore } from '../store/cart';
 import { catalogApi } from '../api/catalog';
 import { fileUploadApi } from '../api/fileUpload';
 import { Category, Product } from '../types/catalog';
 import { formatPrice } from '../utils/currency';
 import { showError, showSuccess, showDeleteConfirm } from '../utils/alerts';
+import QuantityDiscountForm from '../components/QuantityDiscountForm';
 
 
 interface CreateProductForm {
@@ -27,12 +29,15 @@ interface UpdateProductForm {
 
 const ProductManagement: React.FC = () => {
   const { user } = useAuthStore();
+  const { forceSync } = useCartStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showDiscountForm, setShowDiscountForm] = useState(false);
+  const [discountProduct, setDiscountProduct] = useState<Product | null>(null);
   
   const [createForm, setCreateForm] = useState<CreateProductForm>({
     name: '',
@@ -183,6 +188,9 @@ const ProductManagement: React.FC = () => {
       const updatedProduct = await catalogApi.updateProduct(editingProduct.id, updateData);
       setProducts(products.map(p => p.id === editingProduct.id ? updatedProduct : p));
       
+      // Forzar sincronización del carrito para actualizar precios
+      forceSync();
+      
       // Limpiar el formulario
       setEditingProduct(null);
       setUpdateForm({});
@@ -220,6 +228,46 @@ const ProductManagement: React.FC = () => {
     });
     setEditingImage(null);
     setEditingImagePreview(null);
+  };
+
+  const startDiscountConfig = (product: Product) => {
+    setDiscountProduct(product);
+    setShowDiscountForm(true);
+  };
+
+  const handleDiscountSave = async (discountData: {
+    hasQuantityDiscount: boolean;
+    minQuantityForDiscount?: number;
+    discountedPrice?: number;
+    discountStartDate?: string;
+    discountEndDate?: string;
+  }) => {
+    if (!discountProduct) return;
+
+    try {
+      await catalogApi.updateProduct(discountProduct.id, discountData);
+      
+      // Actualizar el producto en la lista local
+      setProducts(products.map(p => 
+        p.id === discountProduct.id 
+          ? { ...p, ...discountData }
+          : p
+      ));
+      
+      // Forzar sincronización del carrito para actualizar precios
+      forceSync();
+      
+      setShowDiscountForm(false);
+      setDiscountProduct(null);
+      showSuccess('¡Descuento configurado!', 'El descuento por cantidad se ha configurado exitosamente');
+    } catch (err: any) {
+      showError('Error al configurar descuento', `Error al configurar descuento: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const handleDiscountCancel = () => {
+    setShowDiscountForm(false);
+    setDiscountProduct(null);
   };
 
   if (loading) {
@@ -464,6 +512,12 @@ const ProductManagement: React.FC = () => {
                         Editar
                       </button>
                       <button
+                        onClick={() => startDiscountConfig(product)}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        Descuentos
+                      </button>
+                      <button
                         onClick={() => handleDeleteProduct(product.id)}
                         className="text-red-600 hover:text-red-900"
                       >
@@ -625,6 +679,15 @@ const ProductManagement: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Formulario de descuentos por cantidad */}
+        {showDiscountForm && discountProduct && (
+          <QuantityDiscountForm
+            product={discountProduct}
+            onSave={handleDiscountSave}
+            onCancel={handleDiscountCancel}
+          />
         )}
       </div>
     </div>

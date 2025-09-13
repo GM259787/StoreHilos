@@ -33,10 +33,30 @@ public class Product
     [Required]
     public int CategoryId { get; set; }
     
+    // Campos para descuento por cantidad
+    public bool HasQuantityDiscount { get; set; } = false;
+    
+    public int? MinQuantityForDiscount { get; set; }
+    
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal? DiscountedPrice { get; set; }
+    
+    public DateTime? DiscountStartDate { get; set; }
+    
+    public DateTime? DiscountEndDate { get; set; }
+    
     // Navigation property
     public Category Category { get; set; } = null!;
     
     // Propiedad calculada para stock disponible
     [NotMapped]
     public int AvailableStock => Stock - ReservedStock;
+    
+    // Propiedad calculada para verificar si el descuento está activo
+    [NotMapped]
+    public bool IsDiscountActive => HasQuantityDiscount && 
+        MinQuantityForDiscount.HasValue && 
+        DiscountedPrice.HasValue &&
+        (!DiscountStartDate.HasValue || DiscountStartDate.Value <= DateTime.Now) &&
+        (!DiscountEndDate.HasValue || DiscountEndDate.Value >= DateTime.Now);
 }

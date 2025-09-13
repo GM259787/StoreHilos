@@ -34,6 +34,7 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
       }
     } else {
       updateQuantity(item.id, newQuantity);
+      // El recálculo de descuentos se maneja automáticamente por useCartSync
     }
   };
 
@@ -58,9 +59,25 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
         <p className="text-sm text-gray-500">
           Stock disponible: {item.availableStock} unidades
         </p>
-        <p className="text-lg font-semibold text-gray-900">
-          {formatPrice(item.price)} c/u
-        </p>
+        <div className="space-y-1">
+          {item.hasDiscount && item.originalPrice && item.originalPrice > item.price ? (
+            <div>
+              <div className="text-sm text-gray-500 line-through">
+                {formatPrice(item.originalPrice)} c/u
+              </div>
+              <div className="text-lg font-semibold text-green-600">
+                {formatPrice(item.price)} c/u
+              </div>
+              <div className="text-xs text-green-600 font-medium">
+                ¡Descuento aplicado!
+              </div>
+            </div>
+          ) : (
+            <div className="text-lg font-semibold text-gray-900">
+              {formatPrice(item.price)} c/u
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Controles de cantidad */}
@@ -107,6 +124,11 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
         <p className="text-sm text-gray-500">
           {item.quantity} x {formatPrice(item.price)}
         </p>
+        {item.hasDiscount && item.originalPrice && item.originalPrice > item.price && (
+          <p className="text-xs text-green-600 font-medium">
+            Ahorras: {formatPrice((item.originalPrice - item.price) * item.quantity)}
+          </p>
+        )}
       </div>
 
       {/* Botón eliminar */}

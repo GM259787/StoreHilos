@@ -64,8 +64,8 @@ const Admin = () => {
   };
 
   const handleUpdateStatus = async (orderId: number, newStatus: string) => {
-    if (user?.role !== 'Armador') {
-      showWarning('Acceso denegado', 'Solo los armadores pueden cambiar el estado de los pedidos');
+    if (user?.role !== 'Armador' && user?.role !== 'Cobrador') {
+      showWarning('Acceso denegado', 'Solo los armadores y cobradores pueden cambiar el estado de los pedidos');
       return;
     }
 
