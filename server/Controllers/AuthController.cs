@@ -105,4 +105,54 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Usuario no encontrado" });
         }
     }
+
+    [HttpPost("google-callback")]
+    public async Task<ActionResult<AuthResponseDto>> GoogleCallback([FromBody] GoogleCallbackDto callbackDto)
+    {
+        try
+        {
+            var response = await _authService.GoogleCallbackAsync(callbackDto);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
+    {
+        try
+        {
+            var result = await _authService.ForgotPasswordAsync(forgotPasswordDto.Email);
+            if (result)
+            {
+                return Ok(new { message = "Si el email existe, se ha enviado un enlace de recuperación" });
+            }
+            return BadRequest(new { message = "Error al procesar la solicitud" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+    {
+        try
+        {
+            var result = await _authService.ResetPasswordAsync(resetPasswordDto.Token, resetPasswordDto.NewPassword);
+            if (result)
+            {
+                return Ok(new { message = "Contraseña restablecida exitosamente" });
+            }
+            return BadRequest(new { message = "Token inválido o expirado" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

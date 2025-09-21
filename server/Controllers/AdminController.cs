@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.DTOs;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -12,10 +13,12 @@ namespace Server.Controllers;
 public class AdminController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IWhatsAppService _whatsAppService;
 
-    public AdminController(AppDbContext context)
+    public AdminController(AppDbContext context, IWhatsAppService whatsAppService)
     {
         _context = context;
+        _whatsAppService = whatsAppService;
     }
 
     [HttpGet("orders")]
@@ -234,16 +237,32 @@ public class AdminController : ControllerBase
         if (user.Role.Name != "Armador" && user.Role.Name != "Cobrador")
             return Forbid();
 
-        var order = await _context.Orders.FindAsync(id);
+        var order = await _context.Orders
+            .Include(o => o.User)
+            .FirstOrDefaultAsync(o => o.Id == id);
+            
         if (order == null)
             return NotFound();
 
+        var previousStatus = order.Status;
         order.Status = updateDto.Status;
         order.UpdatedAt = DateTime.UtcNow;
         
-        // Estado del pedido actualizado
-
         await _context.SaveChangesAsync();
+
+        // Enviar notificación de WhatsApp si el pedido fue enviado
+        if (updateDto.Status == "Shipped" && previousStatus != "Shipped")
+        {
+            var customerName = $"{order.User.FirstName} {order.User.LastName}";
+            var shippingAddress = $"{order.ShippingAddress}, {order.ShippingCity}";
+            
+            await _whatsAppService.SendOrderShippedNotificationAsync(
+                order.OrderNumber,
+                customerName,
+                order.User.Email,
+                shippingAddress
+            );
+        }
 
         return Ok(new { message = "Estado del pedido actualizado" });
     }

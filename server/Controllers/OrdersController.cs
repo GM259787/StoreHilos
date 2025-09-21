@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.DTOs;
 using Server.Models;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -13,10 +14,12 @@ namespace Server.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IWhatsAppService _whatsAppService;
 
-    public OrdersController(AppDbContext context)
+    public OrdersController(AppDbContext context, IWhatsAppService whatsAppService)
     {
         _context = context;
+        _whatsAppService = whatsAppService;
     }
 
     [HttpGet]
@@ -260,6 +263,75 @@ public class OrdersController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(new { message = "Pedido cancelado exitosamente" });
+    }
+
+    [HttpGet("test-simple")]
+    [AllowAnonymous]
+    public ActionResult TestSimple()
+    {
+        return Ok(new { message = "Endpoint funcionando", timestamp = DateTime.Now });
+    }
+
+    [HttpPost("test-whatsapp")]
+    public async Task<ActionResult> TestWhatsApp()
+    {
+        try
+        {
+            await _whatsAppService.SendOrderShippedNotificationAsync(
+                "TEST-001",
+                "Usuario de Prueba",
+                "test@example.com",
+                "Dirección de Prueba"
+            );
+            return Ok(new { message = "Test de WhatsApp enviado" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("notify-whatsapp")]
+    public async Task<ActionResult> NotifyWhatsApp([FromBody] NotifyWhatsAppDto notifyDto)
+    {
+        try
+        {
+            Console.WriteLine($"=== NOTIFY WHATSAPP ENDPOINT CALLED ===");
+            Console.WriteLine($"OrderId: {notifyDto?.OrderId}");
+            Console.WriteLine($"Request received at: {DateTime.Now}");
+            
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            Console.WriteLine($"UserId: {userId}");
+            
+            // Obtener el pedido
+            var order = await _context.Orders
+                .Include(o => o.User)
+                .FirstOrDefaultAsync(o => o.Id == notifyDto.OrderId);
+
+            if (order == null)
+                return NotFound(new { message = "Pedido no encontrado" });
+
+            // Verificar que el pedido pertenece al usuario
+            if (order.UserId != userId)
+                return Forbid();
+
+            // Enviar notificación de WhatsApp
+            var customerName = $"{order.User.FirstName} {order.User.LastName}";
+            var shippingAddress = $"{order.ShippingAddress}, {order.ShippingCity}";
+            
+            await _whatsAppService.SendOrderShippedNotificationAsync(
+                order.OrderNumber,
+                customerName,
+                order.User.Email,
+                shippingAddress
+            );
+
+            return Ok(new { message = "Notificación de WhatsApp enviada" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     private string GenerateOrderNumber()

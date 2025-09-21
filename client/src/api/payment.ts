@@ -24,7 +24,7 @@ export interface PaymentStatusResponse {
 export const paymentApi = {
   // Crear preferencia de pago con Mercado Pago
   createPreference: async (data: CreatePreferenceData): Promise<CreatePreferenceResponse> => {
-    const response = await api.post('/api/payment/create-preference', data);
+    const response = await api.post('/payment/create-preference', data);
     return response.data;
   },
 

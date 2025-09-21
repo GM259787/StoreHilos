@@ -14,7 +14,9 @@ import TransferConfirmation from './pages/TransferConfirmation';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import PaymentPending from './pages/PaymentPending';
-import AuthDebug from './components/AuthDebug';
+import GoogleAuthCallback from './pages/GoogleAuthCallback';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import { useAuthStore } from './store/auth';
 
 function App() {
@@ -51,11 +53,13 @@ function App() {
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/failure" element={<PaymentFailure />} />
             <Route path="/payment/pending" element={<PaymentPending />} />
+            <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </main>
         <Footer />
         <WhatsAppButton />
-        <AuthDebug />
       </div>
     </Router>
   );

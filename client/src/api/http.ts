@@ -1,10 +1,21 @@
 import axios from 'axios';
 
+// Configuración flexible de la API
+const getApiBaseUrl = () => {
+  const baseUrl = import.meta.env.VITE_API_URL;
+  if (!baseUrl) {
+    throw new Error('VITE_API_URL no está configurado. Verifica tu archivo .env');
+  }
+  console.log('API Base URL:', baseUrl);
+  return baseUrl;
+};
+
 const api = axios.create({
-  baseURL: 'http://localhost:5175',
+  baseURL: `${getApiBaseUrl()}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 segundos de timeout
 });
 
 // Interceptor para agregar el token JWT
@@ -41,10 +52,33 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('API Error:', error);
+    
+    // Log detallado del error para debugging
+    if (error.response) {
+      console.error('Response Error:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        url: error.config?.url,
+        method: error.config?.method
+      });
+    } else if (error.request) {
+      console.error('Request Error:', {
+        message: error.message,
+        code: error.code,
+        url: error.config?.url,
+        method: error.config?.method
+      });
+    } else {
+      console.error('General Error:', error.message);
+    }
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('auth-storage');
       window.location.href = '/auth';
     }
+    
     return Promise.reject(error);
   }
 );

@@ -4,7 +4,7 @@ import { CartItem } from '../types/catalog';
 export const cartApi = {
   // Sincronizar carrito con el backend
   syncCart: async (items: CartItem[]): Promise<{ message: string }> => {
-    const response = await api.post('/api/cart/sync', {
+    const response = await api.post('/cart/sync', {
       items: items.map(item => ({
         productId: item.id,
         quantity: item.quantity
@@ -15,7 +15,7 @@ export const cartApi = {
 
   // Obtener carrito del backend
   getCart: async (): Promise<CartItem[]> => {
-    const response = await api.get('/api/cart');
+    const response = await api.get('/cart');
     return response.data;
   }
 };

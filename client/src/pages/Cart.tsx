@@ -67,7 +67,6 @@ const Cart = () => {
       setShowShippingForm(false);
       await processOrder(shippingInfo);
     } catch (error) {
-      console.error('Error actualizando datos de envío:', error);
       showError('Error al guardar', 'Error al guardar los datos de envío. Por favor, intenta nuevamente.');
     } finally {
       setIsProcessing(false);
@@ -98,12 +97,6 @@ const Cart = () => {
       navigate('/payment', { state: orderData });
       
     } catch (error: any) {
-      console.error('Error procesando pedido:', error);
-      console.error('Detalles del error:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
       showError('Error al procesar pedido', `Error al procesar el pedido: ${error.response?.data?.message || error.message}. Por favor, intenta nuevamente.`);
     } finally {
       setIsProcessing(false);

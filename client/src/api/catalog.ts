@@ -3,7 +3,7 @@ import { Category, Product, Paged } from '../types/catalog';
 
 export const catalogApi = {
   getCategories: async (): Promise<Category[]> => {
-    const response = await api.get('/api/categories');
+    const response = await api.get('/categories');
     return response.data;
   },
 
@@ -14,12 +14,12 @@ export const catalogApi = {
     pageSize?: number;
     sort?: string;
   } = {}): Promise<Paged<Product>> => {
-    const response = await api.get('/api/products', { params });
+    const response = await api.get('/products', { params });
     return response.data;
   },
 
   getProduct: async (id: number): Promise<Product> => {
-    const response = await api.get(`/api/products/${id}`);
+    const response = await api.get(`/products/${id}`);
     return response.data;
   },
 
@@ -31,7 +31,7 @@ export const catalogApi = {
     price: number;
     categoryId: number;
   }): Promise<Product> => {
-    const response = await api.post('/api/products', product);
+    const response = await api.post('/products', product);
     return response.data;
   },
 
@@ -48,11 +48,11 @@ export const catalogApi = {
     discountStartDate?: string;
     discountEndDate?: string;
   }): Promise<Product> => {
-    const response = await api.put(`/api/products/${id}`, product);
+    const response = await api.put(`/products/${id}`, product);
     return response.data;
   },
 
   deleteProduct: async (id: number): Promise<void> => {
-    await api.delete(`/api/products/${id}`);
+    await api.delete(`/products/${id}`);
   }
 };

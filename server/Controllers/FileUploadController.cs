@@ -15,6 +15,23 @@ public class FileUploadController : ControllerBase
         _environment = environment;
     }
 
+    [HttpGet("test-paths")]
+    [Authorize(Roles = "Cobrador")]
+    public IActionResult TestPaths()
+    {
+        var webRootPath = _environment.ContentRootPath; // Apunta al directorio base (httpdocs)
+        var uploadsFolder = Path.Combine(webRootPath, "uploads", "products");
+        
+        return Ok(new { 
+            WebRootPath = _environment.WebRootPath,
+            ContentRootPath = _environment.ContentRootPath,
+            CalculatedWebRootPath = webRootPath,
+            UploadsFolder = uploadsFolder,
+            UploadsFolderExists = Directory.Exists(uploadsFolder),
+            CanWrite = CanWriteToDirectory(uploadsFolder)
+        });
+    }
+
     [HttpPost("upload-image")]
     [Authorize(Roles = "Cobrador")]
     public async Task<IActionResult> UploadImage(IFormFile file)
@@ -42,10 +59,26 @@ public class FileUploadController : ControllerBase
             }
 
             // Crear directorio si no existe
-            var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads", "products");
+            var webRootPath = _environment.ContentRootPath; // Apunta al directorio base (httpdocs)
+            var uploadsFolder = Path.Combine(webRootPath, "uploads", "products");
+            
+            // Asegurar que el directorio existe
             if (!Directory.Exists(uploadsFolder))
             {
-                Directory.CreateDirectory(uploadsFolder);
+                try
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+                catch (Exception dirEx)
+                {
+                    return StatusCode(500, new { message = $"Error al crear directorio: {dirEx.Message}" });
+                }
+            }
+            
+            // Verificar que el directorio se creó correctamente
+            if (!Directory.Exists(uploadsFolder))
+            {
+                return StatusCode(500, new { message = $"No se pudo crear el directorio de uploads en: {uploadsFolder}" });
             }
 
             // Generar nombre único para el archivo
@@ -53,14 +86,27 @@ public class FileUploadController : ControllerBase
             var filePath = Path.Combine(uploadsFolder, fileName);
 
             // Guardar el archivo
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                await file.CopyToAsync(stream);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+            }
+            catch (Exception saveEx)
+            {
+                return StatusCode(500, new { message = $"Error al guardar archivo: {saveEx.Message}" });
+            }
+            
+            // Verificar que el archivo se guardó correctamente
+            if (!System.IO.File.Exists(filePath))
+            {
+                return StatusCode(500, new { message = $"No se pudo guardar el archivo en: {filePath}" });
             }
 
             // Retornar la URL relativa del archivo
-            var fileUrl = $"/uploads/products/{fileName}";
-
+            //var fileUrl = $"/uploads/products/{fileName}";
+            var fileUrl = filePath;
             return Ok(new { 
                 message = "Archivo subido exitosamente",
                 fileUrl = fileUrl,
@@ -70,6 +116,26 @@ public class FileUploadController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = $"Error al subir el archivo: {ex.Message}" });
+        }
+    }
+
+    private bool CanWriteToDirectory(string path)
+    {
+        try
+        {
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            
+            var testFile = Path.Combine(path, $"test_{Guid.NewGuid()}.tmp");
+            System.IO.File.WriteAllText(testFile, "test");
+            System.IO.File.Delete(testFile);
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

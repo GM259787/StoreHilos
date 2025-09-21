@@ -161,7 +161,7 @@ const ProductManagement: React.FC = () => {
   const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
-
+    console.log(e, updateForm, editingImage);
     try {
       let imageUrl = updateForm.imageUrl;
       
@@ -171,6 +171,7 @@ const ProductManagement: React.FC = () => {
         try {
           const uploadResult = await fileUploadApi.uploadImage(editingImage);
           imageUrl = uploadResult.fileUrl;
+          console.log('Uploaded image URL:', imageUrl);
         } catch (uploadErr: any) {
           showError('Error al subir imagen', `Error al subir la imagen: ${uploadErr.response?.data?.message || uploadErr.message}`);
           setUpdatingImage(false);

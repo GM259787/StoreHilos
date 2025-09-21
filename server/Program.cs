@@ -15,12 +15,20 @@ builder.Services.AddSwaggerGen();
 // Agregar Memory Cache
 builder.Services.AddMemoryCache();
 
+// Agregar HttpClient para WhatsApp
+builder.Services.AddHttpClient();
+
+// Agregar servicios personalizados
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Configurar CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:5175")
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "https://storehilos.uy")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

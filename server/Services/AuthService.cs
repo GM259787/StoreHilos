@@ -15,20 +15,25 @@ public interface IAuthService
     Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
     Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
     Task<AuthResponseDto> GoogleAuthAsync(GoogleAuthDto googleAuthDto);
+    Task<AuthResponseDto> GoogleCallbackAsync(GoogleCallbackDto callbackDto);
     Task<UserDto> GetUserAsync(int userId);
     Task<UserDto> UpdateUserAsync(int userId, UserDto userDto);
     Task<UserDto> UpdateShippingInfoAsync(int userId, UpdateShippingInfoDto shippingInfoDto);
+    Task<bool> ForgotPasswordAsync(string email);
+    Task<bool> ResetPasswordAsync(string token, string newPassword);
 }
 
 public class AuthService : IAuthService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly IEmailService _emailService;
 
-    public AuthService(AppDbContext context, IConfiguration configuration)
+    public AuthService(AppDbContext context, IConfiguration configuration, IEmailService emailService)
     {
         _context = context;
         _configuration = configuration;
+        _emailService = emailService;
     }
 
     public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
@@ -184,6 +189,75 @@ public class AuthService : IAuthService
         return MapToUserDto(user);
     }
 
+    public async Task<AuthResponseDto> GoogleCallbackAsync(GoogleCallbackDto callbackDto)
+    {
+        try
+        {
+            // Intercambiar código por token
+            var tokenResponse = await ExchangeCodeForTokenAsync(callbackDto.Code, callbackDto.RedirectUri);
+            
+            // Obtener información del usuario
+            var userInfo = await GetUserInfoFromGoogleAsync(tokenResponse.AccessToken);
+            
+            // Crear DTO para Google Auth
+            var googleAuthDto = new GoogleAuthDto
+            {
+                IdToken = tokenResponse.IdToken,
+                Email = userInfo.Email,
+                FirstName = userInfo.GivenName,
+                LastName = userInfo.FamilyName,
+                Picture = userInfo.Picture
+            };
+            
+            // Usar el método existente de Google Auth
+            return await GoogleAuthAsync(googleAuthDto);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error en callback de Google: {ex.Message}");
+        }
+    }
+
+    private async Task<dynamic> ExchangeCodeForTokenAsync(string code, string redirectUri)
+    {
+        using var httpClient = new HttpClient();
+        
+        var requestBody = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("client_id", "1090797777834-161rou9sg4j103lh8f68052kmu6kv493.apps.googleusercontent.com"),
+            new KeyValuePair<string, string>("client_secret", "GOCSPX-your-client-secret-here"), // Necesitas configurar esto
+            new KeyValuePair<string, string>("code", code),
+            new KeyValuePair<string, string>("grant_type", "authorization_code"),
+            new KeyValuePair<string, string>("redirect_uri", redirectUri)
+        });
+
+        var response = await httpClient.PostAsync("https://oauth2.googleapis.com/token", requestBody);
+        var content = await response.Content.ReadAsStringAsync();
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error al intercambiar código: {content}");
+        }
+
+        return System.Text.Json.JsonSerializer.Deserialize<dynamic>(content);
+    }
+
+    private async Task<dynamic> GetUserInfoFromGoogleAsync(string accessToken)
+    {
+        using var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        
+        var response = await httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+        var content = await response.Content.ReadAsStringAsync();
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error al obtener información del usuario: {content}");
+        }
+
+        return System.Text.Json.JsonSerializer.Deserialize<dynamic>(content);
+    }
+
     private async Task<AuthResponseDto> GenerateAuthResponseAsync(User user)
     {
         var token = GenerateJwtToken(user);
@@ -261,5 +335,86 @@ public class AuthService : IAuthService
             ShippingPostalCode = user.ShippingPostalCode,
             ShippingInstructions = user.ShippingInstructions
         };
+    }
+
+    public async Task<bool> ForgotPasswordAsync(string email)
+    {
+        try
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                // Por seguridad, no revelamos si el email existe o no
+                return true;
+            }
+
+            // Invalidar tokens anteriores
+            var existingTokens = await _context.PasswordResetTokens
+                .Where(t => t.Email == email && !t.IsUsed)
+                .ToListAsync();
+            
+            foreach (var token in existingTokens)
+            {
+                token.IsUsed = true;
+                token.UsedAt = DateTime.UtcNow;
+            }
+
+            // Crear nuevo token
+            var resetToken = Guid.NewGuid().ToString();
+            var passwordResetToken = new PasswordResetToken
+            {
+                Token = resetToken,
+                Email = email,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddHours(1) // Token válido por 1 hora
+            };
+
+            _context.PasswordResetTokens.Add(passwordResetToken);
+            await _context.SaveChangesAsync();
+
+            // Enviar email
+            await _emailService.SendPasswordResetEmailAsync(email, resetToken, $"{user.FirstName} {user.LastName}");
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> ResetPasswordAsync(string token, string newPassword)
+    {
+        try
+        {
+            var resetToken = await _context.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Token == token && !t.IsUsed && t.ExpiresAt > DateTime.UtcNow);
+
+            if (resetToken == null)
+            {
+                return false; // Token inválido o expirado
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == resetToken.Email);
+            if (user == null)
+            {
+                return false;
+            }
+
+            // Actualizar contraseña
+            user.PasswordHash = HashPassword(newPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+
+            // Marcar token como usado
+            resetToken.IsUsed = true;
+            resetToken.UsedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

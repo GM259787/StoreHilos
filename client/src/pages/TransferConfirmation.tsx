@@ -38,7 +38,19 @@ const TransferConfirmation: React.FC = () => {
         notes: 'Pedido con transferencia bancaria'
       };
 
-      await ordersApi.createOrder(orderData);
+      console.log('Creando pedido con datos:', orderData);
+      console.log('API URL:', import.meta.env.VITE_API_URL);
+      
+      const order = await ordersApi.createOrder(orderData);
+      
+      // Enviar notificación de WhatsApp
+      try {
+        await ordersApi.notifyWhatsApp(order.id);
+        console.log('Notificación de WhatsApp enviada');
+      } catch (whatsappError) {
+        console.error('Error enviando WhatsApp:', whatsappError);
+        // No fallar el proceso si WhatsApp falla
+      }
       
       // Limpiar el carrito
       clearCart();

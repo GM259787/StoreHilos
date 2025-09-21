@@ -4,30 +4,30 @@ import { Category, CreateCategoryData, UpdateCategoryData } from '../types/categ
 export const categoriesApi = {
   // Obtener todas las categorías
   getCategories: async (): Promise<Category[]> => {
-    const response = await api.get<Category[]>('/api/categories');
+    const response = await api.get<Category[]>('/categories');
     return response.data;
   },
 
   // Obtener categoría específica
   getCategory: async (id: number): Promise<Category> => {
-    const response = await api.get<Category>(`/api/categories/${id}`);
+    const response = await api.get<Category>(`/categories/${id}`);
     return response.data;
   },
 
   // Crear nueva categoría
   createCategory: async (data: CreateCategoryData): Promise<Category> => {
-    const response = await api.post<Category>('/api/categories', data);
+    const response = await api.post<Category>('/categories', data);
     return response.data;
   },
 
   // Actualizar categoría existente
   updateCategory: async (id: number, data: UpdateCategoryData): Promise<Category> => {
-    const response = await api.put<Category>(`/api/categories/${id}`, data);
+    const response = await api.put<Category>(`/categories/${id}`, data);
     return response.data;
   },
 
   // Eliminar categoría
   deleteCategory: async (id: number): Promise<void> => {
-    await api.delete(`/api/categories/${id}`);
+    await api.delete(`/categories/${id}`);
   }
 };
