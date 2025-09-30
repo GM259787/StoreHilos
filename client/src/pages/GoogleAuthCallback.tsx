@@ -46,7 +46,9 @@ const GoogleAuthCallback = () => {
     const exchangeCodeForToken = async (code: string) => {
       try {
         // Enviar código al backend para procesar
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google-callback`, {
+        const apiBase = import.meta.env.VITE_API_URL as string;
+        const callbackUrl = `${apiBase}/api/auth/google-callback`;
+        const response = await fetch(callbackUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -58,11 +60,22 @@ const GoogleAuthCallback = () => {
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Error al procesar la autenticación');
+          let message = 'Error al procesar la autenticación';
+          try {
+            const errorData = await response.json();
+            message = errorData.message || message;
+          } catch (_) {
+            // Puede que el backend responda HTML (por ejemplo 502/500), mantenemos mensaje genérico
+          }
+          throw new Error(message);
         }
 
-        const authData = await response.json();
+        let authData: any;
+        try {
+          authData = await response.json();
+        } catch (_) {
+          throw new Error('Respuesta inválida del servidor');
+        }
 
         // Enviar datos al popup padre
         window.opener?.postMessage({
