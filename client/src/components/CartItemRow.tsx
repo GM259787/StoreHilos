@@ -10,10 +10,10 @@ interface CartItemRowProps {
 const CartItemRow = ({ item }: CartItemRowProps) => {
   const updateQuantity = useCartStore(state => state.updateQuantity);
   const removeItem = useCartStore(state => state.removeItem);
-  
+
   // URL base del backend para las imágenes
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';
-  
+
   // Construir la URL completa de la imagen
   const getImageUrl = (imageUrl: string | null | undefined) => {
     if (!imageUrl) {
@@ -21,10 +21,10 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
     }
     // Si la URL ya es completa, usarla tal como está
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
+      return encodeURI(imageUrl);
     }
     // Si es relativa, concatenarla con la URL base del backend
-    return `${API_BASE_URL}${imageUrl}`;
+    return encodeURI(`${API_BASE_URL}${imageUrl}`);
   };
 
   const handleQuantityChange = (newQuantity: number) => {
