@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Server.Data;
@@ -90,7 +92,7 @@ public class AuthService : IAuthService
     {
         // En producción, validar el token con Google
         // Por ahora, asumimos que el token es válido
-        
+
         var user = await _context.Users
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == googleAuthDto.Email);
@@ -118,7 +120,7 @@ public class AuthService : IAuthService
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            
+
             // Recargar el usuario con el rol
             await _context.Entry(user).Reference(u => u.Role).LoadAsync();
         }
@@ -129,7 +131,7 @@ public class AuthService : IAuthService
             user.LastName = googleAuthDto.LastName;
             user.GooglePicture = googleAuthDto.Picture;
             user.UpdatedAt = DateTime.UtcNow;
-            
+
             await _context.SaveChangesAsync();
         }
 
@@ -195,10 +197,10 @@ public class AuthService : IAuthService
         {
             // Intercambiar código por token
             var tokenResponse = await ExchangeCodeForTokenAsync(callbackDto.Code, callbackDto.RedirectUri);
-            
+
             // Obtener información del usuario
             var userInfo = await GetUserInfoFromGoogleAsync(tokenResponse.AccessToken);
-            
+
             // Crear DTO para Google Auth
             var googleAuthDto = new GoogleAuthDto
             {
@@ -208,7 +210,7 @@ public class AuthService : IAuthService
                 LastName = userInfo.FamilyName,
                 Picture = userInfo.Picture
             };
-            
+
             // Usar el método existente de Google Auth
             return await GoogleAuthAsync(googleAuthDto);
         }
@@ -218,14 +220,42 @@ public class AuthService : IAuthService
         }
     }
 
-    private async Task<dynamic> ExchangeCodeForTokenAsync(string code, string redirectUri)
+    private class GoogleTokenResponse
+    {
+        [JsonPropertyName("access_token")]
+        public string AccessToken { get; set; } = string.Empty;
+
+        [JsonPropertyName("expires_in")]
+        public int ExpiresIn { get; set; }
+
+        [JsonPropertyName("refresh_token")]
+        public string? RefreshToken { get; set; }
+
+        [JsonPropertyName("scope")]
+        public string? Scope { get; set; }
+
+        [JsonPropertyName("token_type")]
+        public string TokenType { get; set; } = string.Empty;
+
+        [JsonPropertyName("id_token")]
+        public string IdToken { get; set; } = string.Empty;
+    }
+
+    private async Task<GoogleTokenResponse> ExchangeCodeForTokenAsync(string code, string redirectUri)
     {
         using var httpClient = new HttpClient();
-        
+        // Leer credenciales desde configuración
+        var clientId = _configuration["GoogleOAuth:ClientId"];
+        var clientSecret = _configuration["GoogleOAuth:ClientSecret"];
+        if (string.IsNullOrWhiteSpace(clientId) || string.IsNullOrWhiteSpace(clientSecret))
+        {
+            throw new Exception("Google OAuth no está configurado. Defina GoogleOAuth:ClientId y GoogleOAuth:ClientSecret en appsettings.");
+        }
+
         var requestBody = new FormUrlEncodedContent(new[]
         {
-            new KeyValuePair<string, string>("client_id", "1090797777834-161rou9sg4j103lh8f68052kmu6kv493.apps.googleusercontent.com"),
-            new KeyValuePair<string, string>("client_secret", "GOCSPX-your-client-secret-here"), // Necesitas configurar esto
+            new KeyValuePair<string, string>("client_id", clientId!),
+            new KeyValuePair<string, string>("client_secret", clientSecret!),
             new KeyValuePair<string, string>("code", code),
             new KeyValuePair<string, string>("grant_type", "authorization_code"),
             new KeyValuePair<string, string>("redirect_uri", redirectUri)
@@ -233,29 +263,60 @@ public class AuthService : IAuthService
 
         var response = await httpClient.PostAsync("https://oauth2.googleapis.com/token", requestBody);
         var content = await response.Content.ReadAsStringAsync();
-        
+
         if (!response.IsSuccessStatusCode)
         {
             throw new Exception($"Error al intercambiar código: {content}");
         }
 
-        return System.Text.Json.JsonSerializer.Deserialize<dynamic>(content);
+        var token = JsonSerializer.Deserialize<GoogleTokenResponse>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+        if (token == null || string.IsNullOrWhiteSpace(token.AccessToken))
+        {
+            throw new Exception("Respuesta de token inválida");
+        }
+        return token;
     }
 
-    private async Task<dynamic> GetUserInfoFromGoogleAsync(string accessToken)
+    private class GoogleUserInfo
+    {
+        [JsonPropertyName("email")]
+        public string Email { get; set; } = string.Empty;
+
+        [JsonPropertyName("given_name")]
+        public string GivenName { get; set; } = string.Empty;
+
+        [JsonPropertyName("family_name")]
+        public string FamilyName { get; set; } = string.Empty;
+
+        [JsonPropertyName("picture")]
+        public string Picture { get; set; } = string.Empty;
+    }
+
+    private async Task<GoogleUserInfo> GetUserInfoFromGoogleAsync(string accessToken)
     {
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        
+
         var response = await httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
         var content = await response.Content.ReadAsStringAsync();
-        
+
         if (!response.IsSuccessStatusCode)
         {
             throw new Exception($"Error al obtener información del usuario: {content}");
         }
 
-        return System.Text.Json.JsonSerializer.Deserialize<dynamic>(content);
+        var user = JsonSerializer.Deserialize<GoogleUserInfo>(content, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+        if (user == null || string.IsNullOrWhiteSpace(user.Email))
+        {
+            throw new Exception("Respuesta de usuario inválida");
+        }
+        return user;
     }
 
     private async Task<AuthResponseDto> GenerateAuthResponseAsync(User user)
@@ -352,7 +413,7 @@ public class AuthService : IAuthService
             var existingTokens = await _context.PasswordResetTokens
                 .Where(t => t.Email == email && !t.IsUsed)
                 .ToListAsync();
-            
+
             foreach (var token in existingTokens)
             {
                 token.IsUsed = true;

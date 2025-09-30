@@ -28,7 +28,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "https://storehilos.uy")
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:5174",
+                "http://localhost:5175",
+                "https://storehilos.uy",
+                "https://www.storehilos.uy"
+            )
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -112,12 +118,12 @@ app.MapGet("/health", () => new { status = "healthy", timestamp = DateTime.UtcNo
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    
+
     try
     {
         // Verificar si la base de datos existe y tiene tablas
         var pendingMigrations = context.Database.GetPendingMigrations().ToList();
-        
+
         if (pendingMigrations.Any())
         {
             Console.WriteLine($"Aplicando {pendingMigrations.Count} migraciones pendientes...");
@@ -132,7 +138,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex) when (ex.Message.Contains("already exists"))
     {
         Console.WriteLine("⚠️  Las tablas ya existen, creando tabla de migraciones manualmente...");
-        
+
         // Crear la tabla de migraciones si no existe
         try
         {
@@ -143,13 +149,13 @@ using (var scope = app.Services.CreateScope())
                     CONSTRAINT `PK___EFMigrationsHistory` PRIMARY KEY (`MigrationId`)
                 ) CHARACTER SET=utf8mb4;
             ");
-            
+
             // Insertar la migración actual
             await context.Database.ExecuteSqlRawAsync(@"
-                INSERT IGNORE INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`) 
+                INSERT IGNORE INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
                 VALUES ('20250913045827_InitialCreate', '8.0.4');
             ");
-            
+
             Console.WriteLine("✅ Tabla de migraciones creada y configurada.");
         }
         catch (Exception migrationEx)
@@ -157,13 +163,13 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine($"❌ Error configurando migraciones: {migrationEx.Message}");
         }
     }
-    
+
     // Verificar si ya hay datos en la base de datos
     try
     {
         var hasCategories = await context.Categories.AnyAsync();
         var hasRoles = await context.Roles.AnyAsync();
-        
+
         if (!hasCategories || !hasRoles)
         {
             Console.WriteLine("Inicializando datos de la base de datos...");

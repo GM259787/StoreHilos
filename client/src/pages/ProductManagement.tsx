@@ -38,7 +38,7 @@ const ProductManagement: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showDiscountForm, setShowDiscountForm] = useState(false);
   const [discountProduct, setDiscountProduct] = useState<Product | null>(null);
-  
+
   const [createForm, setCreateForm] = useState<CreateProductForm>({
     name: '',
     description: '',
@@ -47,7 +47,7 @@ const ProductManagement: React.FC = () => {
     price: 0,
     categoryId: 0
   });
-  
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -56,10 +56,10 @@ const ProductManagement: React.FC = () => {
   const [editingImage, setEditingImage] = useState<File | null>(null);
   const [editingImagePreview, setEditingImagePreview] = useState<string | null>(null);
   const [updatingImage, setUpdatingImage] = useState(false);
-  
+
   // URL base del backend para las imágenes
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';
-  
+
   // Construir la URL completa de la imagen
   const getImageUrl = (imageUrl: string | null | undefined) => {
     if (!imageUrl) {
@@ -67,10 +67,10 @@ const ProductManagement: React.FC = () => {
     }
     // Si la URL ya es completa, usarla tal como está
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
+      return encodeURI(imageUrl);
     }
     // Si es relativa, concatenarla con la URL base del backend
-    return `${API_BASE_URL}${imageUrl}`;
+    return encodeURI(`${API_BASE_URL}${imageUrl}`);
   };
 
   // Verificar si el usuario tiene permisos
@@ -112,10 +112,10 @@ const ProductManagement: React.FC = () => {
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       let imageUrl = createForm.imageUrl;
-      
+
       // Si hay una imagen seleccionada, subirla primero
       if (selectedImage) {
         setUploadingImage(true);
@@ -129,16 +129,16 @@ const ProductManagement: React.FC = () => {
         }
         setUploadingImage(false);
       }
-      
+
       // Crear el producto con la URL de la imagen
       const productData = {
         ...createForm,
         imageUrl: imageUrl
       };
-      
+
       const newProduct = await catalogApi.createProduct(productData);
       setProducts([...products, newProduct]);
-      
+
       // Limpiar el formulario
       setCreateForm({
         name: '',
@@ -151,7 +151,7 @@ const ProductManagement: React.FC = () => {
       setSelectedImage(null);
       setImagePreview(null);
       setShowCreateForm(false);
-      
+
       showSuccess('¡Producto creado!', 'El producto se ha creado exitosamente');
     } catch (err: any) {
       showError('Error al crear producto', `Error al crear producto: ${err.response?.data?.message || err.message}`);
@@ -164,7 +164,7 @@ const ProductManagement: React.FC = () => {
     console.log(e, updateForm, editingImage);
     try {
       let imageUrl = updateForm.imageUrl;
-      
+
       // Si hay una nueva imagen seleccionada, subirla primero
       if (editingImage) {
         setUpdatingImage(true);
@@ -179,25 +179,25 @@ const ProductManagement: React.FC = () => {
         }
         setUpdatingImage(false);
       }
-      
+
       // Actualizar el producto con la nueva URL de la imagen si se subió una
       const updateData = {
         ...updateForm,
         ...(imageUrl && { imageUrl })
       };
-      
+
       const updatedProduct = await catalogApi.updateProduct(editingProduct.id, updateData);
       setProducts(products.map(p => p.id === editingProduct.id ? updatedProduct : p));
-      
+
       // Forzar sincronización del carrito para actualizar precios
       forceSync();
-      
+
       // Limpiar el formulario
       setEditingProduct(null);
       setUpdateForm({});
       setEditingImage(null);
       setEditingImagePreview(null);
-      
+
       showSuccess('¡Producto actualizado!', 'El producto se ha actualizado exitosamente');
     } catch (err: any) {
       showError('Error al actualizar producto', `Error al actualizar producto: ${err.response?.data?.message || err.message}`);
@@ -247,17 +247,17 @@ const ProductManagement: React.FC = () => {
 
     try {
       await catalogApi.updateProduct(discountProduct.id, discountData);
-      
+
       // Actualizar el producto en la lista local
-      setProducts(products.map(p => 
-        p.id === discountProduct.id 
+      setProducts(products.map(p =>
+        p.id === discountProduct.id
           ? { ...p, ...discountData }
           : p
       ));
-      
+
       // Forzar sincronización del carrito para actualizar precios
       forceSync();
-      
+
       setShowDiscountForm(false);
       setDiscountProduct(null);
       showSuccess('¡Descuento configurado!', 'El descuento por cantidad se ha configurado exitosamente');
@@ -328,7 +328,7 @@ const ProductManagement: React.FC = () => {
                     type="text"
                     required
                     value={createForm.name}
-                    onChange={(e) => setCreateForm({...createForm, name: e.target.value})}
+                    onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -339,7 +339,7 @@ const ProductManagement: React.FC = () => {
                   <select
                     required
                     value={createForm.categoryId}
-                    onChange={(e) => setCreateForm({...createForm, categoryId: parseInt(e.target.value)})}
+                    onChange={(e) => setCreateForm({ ...createForm, categoryId: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value={0}>Seleccionar categoría</option>
@@ -360,7 +360,7 @@ const ProductManagement: React.FC = () => {
                     min="0"
                     required
                     value={createForm.price}
-                    onChange={(e) => setCreateForm({...createForm, price: parseFloat(e.target.value)})}
+                    onChange={(e) => setCreateForm({ ...createForm, price: parseFloat(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="0.00"
                   />
@@ -374,7 +374,7 @@ const ProductManagement: React.FC = () => {
                     min="0"
                     required
                     value={createForm.stock}
-                    onChange={(e) => setCreateForm({...createForm, stock: parseInt(e.target.value)})}
+                    onChange={(e) => setCreateForm({ ...createForm, stock: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -402,9 +402,9 @@ const ProductManagement: React.FC = () => {
                     />
                     {imagePreview && (
                       <div className="mt-2">
-                        <img 
-                          src={imagePreview} 
-                          alt="Preview" 
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
                           className="h-32 w-32 object-cover rounded-lg border"
                         />
                       </div>
@@ -420,7 +420,7 @@ const ProductManagement: React.FC = () => {
                   </label>
                   <textarea
                     value={createForm.description}
-                    onChange={(e) => setCreateForm({...createForm, description: e.target.value})}
+                    onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -547,7 +547,7 @@ const ProductManagement: React.FC = () => {
                       <input
                         type="text"
                         value={updateForm.name || ''}
-                        onChange={(e) => setUpdateForm({...updateForm, name: e.target.value})}
+                        onChange={(e) => setUpdateForm({ ...updateForm, name: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -557,7 +557,7 @@ const ProductManagement: React.FC = () => {
                       </label>
                       <select
                         value={updateForm.categoryId || 0}
-                        onChange={(e) => setUpdateForm({...updateForm, categoryId: parseInt(e.target.value)})}
+                        onChange={(e) => setUpdateForm({ ...updateForm, categoryId: parseInt(e.target.value) })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value={0}>Mantener categoría actual</option>
@@ -577,7 +577,7 @@ const ProductManagement: React.FC = () => {
                         step="0.01"
                         min="0"
                         value={updateForm.price || ''}
-                        onChange={(e) => setUpdateForm({...updateForm, price: parseFloat(e.target.value)})}
+                        onChange={(e) => setUpdateForm({ ...updateForm, price: parseFloat(e.target.value) })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="0.00"
                       />
@@ -590,7 +590,7 @@ const ProductManagement: React.FC = () => {
                         type="number"
                         min="0"
                         value={updateForm.stock || ''}
-                        onChange={(e) => setUpdateForm({...updateForm, stock: parseInt(e.target.value)})}
+                        onChange={(e) => setUpdateForm({ ...updateForm, stock: parseInt(e.target.value) })}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -603,26 +603,26 @@ const ProductManagement: React.FC = () => {
                         {editingProduct?.imageUrl && !editingImagePreview && (
                           <div className="mb-2">
                             <p className="text-sm text-gray-600 mb-2">Imagen actual:</p>
-                            <img 
-                              src={getImageUrl(editingProduct.imageUrl)} 
-                              alt="Imagen actual" 
+                            <img
+                              src={getImageUrl(editingProduct.imageUrl)}
+                              alt="Imagen actual"
                               className="h-32 w-32 object-cover rounded-lg border"
                             />
                           </div>
                         )}
-                        
+
                         {/* Preview de nueva imagen si se selecciona */}
                         {editingImagePreview && (
                           <div className="mb-2">
                             <p className="text-sm text-gray-600 mb-2">Nueva imagen:</p>
-                            <img 
-                              src={editingImagePreview} 
-                              alt="Nueva imagen" 
+                            <img
+                              src={editingImagePreview}
+                              alt="Nueva imagen"
                               className="h-32 w-32 object-cover rounded-lg border"
                             />
                           </div>
                         )}
-                        
+
                         <input
                           type="file"
                           accept="image/*"
@@ -651,7 +651,7 @@ const ProductManagement: React.FC = () => {
                       </label>
                       <textarea
                         value={updateForm.description || ''}
-                        onChange={(e) => setUpdateForm({...updateForm, description: e.target.value})}
+                        onChange={(e) => setUpdateForm({ ...updateForm, description: e.target.value })}
                         rows={3}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />

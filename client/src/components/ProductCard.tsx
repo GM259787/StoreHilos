@@ -11,14 +11,14 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem, items, updateQuantity, removeItem } = useCartStore();
-  
+
   // Obtener la cantidad actual del producto en el carrito
   const cartItem = items.find(item => item.id === product.id);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 1);
-  
+
   // Sincronizar precios del carrito con el catálogo actual
   useCartSync();
-  
+
   // Sincronizar la cantidad con el carrito cuando cambie
   useEffect(() => {
     const currentCartItem = items.find(item => item.id === product.id);
@@ -28,10 +28,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
       setQuantity(1);
     }
   }, [items, product.id]);
-  
+
   // URL base del backend para las imágenes
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';
-  
+
   // Construir la URL completa de la imagen
   const getImageUrl = (imageUrl: string | null | undefined) => {
     if (!imageUrl) {
@@ -39,26 +39,26 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
     // Si la URL ya es completa, usarla tal como está
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
+      return encodeURI(imageUrl);
     }
     // Si es relativa, concatenarla con la URL base del backend
-    return `${API_BASE_URL}${imageUrl}`;
+    return encodeURI(`${API_BASE_URL}${imageUrl}`);
   };
 
   // Calcular precio según cantidad y descuentos
   const getCurrentPrice = () => {
-    if (product.isDiscountActive && 
-        product.minQuantityForDiscount && 
-        product.discountedPrice && 
-        quantity >= product.minQuantityForDiscount) {
+    if (product.isDiscountActive &&
+      product.minQuantityForDiscount &&
+      product.discountedPrice &&
+      quantity >= product.minQuantityForDiscount) {
       return product.discountedPrice;
     }
     return product.price;
   };
 
   const getSavings = () => {
-    if (product.isDiscountActive && 
-        product.discountedPrice) {
+    if (product.isDiscountActive &&
+      product.discountedPrice) {
       return product.price - product.discountedPrice;
     }
     return 0;
@@ -67,7 +67,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const handleAddToCart = () => {
     const currentPrice = getCurrentPrice();
     const discountApplied = quantity >= (product.minQuantityForDiscount || 0);
-    
+
     console.log('Agregando producto al carrito:', {
       id: product.id,
       name: product.name,
@@ -76,7 +76,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       availableStock: product.availableStock,
       discountApplied: discountApplied
     });
-    
+
     // Si el producto ya está en el carrito, actualizar la cantidad
     if (cartItem) {
       updateQuantity(product.id, quantity);
@@ -101,7 +101,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const handleQuantityChange = (newQuantity: number) => {
     const validQuantity = Math.min(Math.max(0, newQuantity), product.availableStock);
     setQuantity(validQuantity);
-    
+
     // Actualizar automáticamente en el carrito si el producto ya está ahí
     if (cartItem) {
       if (validQuantity === 0) {
@@ -124,7 +124,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           alt={product.name}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
-        
+
         {/* Badge de oferta */}
         {product.isDiscountActive && product.minQuantityForDiscount && product.discountedPrice && (
           <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
@@ -138,7 +138,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {product.name}
         </h3>
-        
+
         {product.description && (
           <p className="text-gray-600 text-sm mb-3 line-clamp-2">
             {product.description}
@@ -149,7 +149,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex items-center justify-between mb-3">
           <div className="text-sm text-gray-500">
             <div>Stock total: {product.stock}</div>
-            
+
           </div>
           {isOutOfStock && (
             <span className="text-sm text-red-500 font-medium">
@@ -184,7 +184,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               {formatPrice(product.price)}
             </div>
           )}
-          
+
           {/* Mostrar precio actual según cantidad seleccionada */}
           {product.isDiscountActive && product.minQuantityForDiscount && product.discountedPrice && (
             <div className="mt-2 p-2 bg-blue-50 rounded-lg">
@@ -249,11 +249,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <button
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-                isOutOfStock
+              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isOutOfStock
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+                }`}
             >
               {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
             </button>
