@@ -116,9 +116,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const isOutOfStock = product.availableStock === 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
       {/* Imagen del producto */}
-      <div className="aspect-square overflow-hidden relative">
+      <div className="aspect-square overflow-hidden relative flex-none">
         <img
           src={getImageUrl(product.imageUrl)}
           alt={product.name}
@@ -134,7 +134,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
 
       {/* Información del producto */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {product.name}
         </h3>
@@ -208,8 +208,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
           )}
         </div>
 
-        {/* Controles - Altura fija para mantener alineación */}
-        <div className="space-y-3 min-h-[80px] flex flex-col justify-end">
+        {/* Controles - Pegados abajo de la card */}
+        <div className="space-y-3 min-h-[80px] flex flex-col justify-end mt-auto">
           {/* Selector de cantidad */}
           <div className="flex items-center justify-between">
             <label htmlFor={`quantity-${product.id}`} className="text-sm font-medium text-gray-700">
@@ -250,8 +250,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
               onClick={handleAddToCart}
               disabled={isOutOfStock}
               className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isOutOfStock
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
             >
               {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
