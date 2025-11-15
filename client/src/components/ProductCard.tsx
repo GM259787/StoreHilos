@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Product } from '../types/catalog';
 import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
@@ -11,6 +12,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem, items, updateQuantity, removeItem } = useCartStore();
+  const navigate = useNavigate();
 
   // Obtener la cantidad actual del producto en el carrito
   const cartItem = items.find(item => item.id === product.id);
@@ -115,6 +117,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   const isOutOfStock = product.availableStock === 0;
 
+  const handleProductClick = () => {
+    navigate(`/product/${product.id}`);
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       {/* Imagen del producto */}
@@ -122,7 +128,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <img
           src={getImageUrl(product.imageUrl)}
           alt={product.name}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+          onClick={handleProductClick}
         />
 
         {/* Badge de oferta */}

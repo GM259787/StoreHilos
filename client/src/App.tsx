@@ -17,6 +17,7 @@ import PaymentPending from './pages/PaymentPending';
 import GoogleAuthCallback from './pages/GoogleAuthCallback';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import ProductDetail from './pages/ProductDetail';
 import { useAuthStore } from './store/auth';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
           <Routes>
             <Route path="/" element={<SmartRedirect />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/auth" element={user ? <Navigate to="/" /> : <Auth />} />
             <Route path="/orders" element={user ? <Orders /> : <Navigate to="/auth" />} />
             <Route path="/admin" element={user ? <Admin /> : <Navigate to="/auth" />} />
