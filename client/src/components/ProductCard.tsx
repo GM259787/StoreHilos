@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+// import { cartApi } from '../api/cart';
+import { cartApi } from '../api/cart';
 import { Product } from '../types/catalog';
 import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
-import { useCartSync } from '../hooks/useCartSync';
+import { useAuthStore } from '../store/auth';
 
 
 interface ProductCardProps {
@@ -11,13 +13,11 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem, items, updateQuantity, removeItem } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
 
   // Obtener la cantidad actual del producto en el carrito
   const cartItem = items.find(item => item.id === product.id);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 1);
-
-  // Sincronizar precios del carrito con el catálogo actual
-  useCartSync();
 
   // Sincronizar la cantidad con el carrito cuando cambie
   useEffect(() => {
@@ -64,7 +64,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     return 0;
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     const currentPrice = getCurrentPrice();
     const discountApplied = quantity >= (product.minQuantityForDiscount || 0);
 
@@ -96,9 +96,23 @@ const ProductCard = ({ product }: ProductCardProps) => {
         });
       }
     }
+
+    // Sincronizar inmediatamente con el backend si el usuario está autenticado
+    // Esto asegura que el backend tenga el producto antes de que el usuario intente comprar
+    if (isAuthenticated) {
+      try {
+        // Obtener los items actualizados del store después de agregar
+        const updatedItems = useCartStore.getState().items;
+        await cartApi.syncCart(updatedItems);
+        console.log('Carrito sincronizado inmediatamente después de agregar producto');
+      } catch (error) {
+        console.error('Error sincronizando carrito inmediatamente:', error);
+        // No mostramos error al usuario, el debounce lo intentará de nuevo
+      }
+    }
   };
 
-  const handleQuantityChange = (newQuantity: number) => {
+  const handleQuantityChange = async (newQuantity: number) => {
     const validQuantity = Math.min(Math.max(0, newQuantity), product.availableStock);
     setQuantity(validQuantity);
 
@@ -110,15 +124,28 @@ const ProductCard = ({ product }: ProductCardProps) => {
       } else {
         updateQuantity(product.id, validQuantity);
       }
+
+      // Sincronizar inmediatamente con el backend si el usuario está autenticado
+      if (isAuthenticated) {
+        try {
+          // Obtener los items actualizados del store después de actualizar
+          const updatedItems = useCartStore.getState().items;
+          await cartApi.syncCart(updatedItems);
+          console.log('Carrito sincronizado inmediatamente después de actualizar cantidad');
+        } catch (error) {
+          console.error('Error sincronizando carrito inmediatamente:', error);
+          // No mostramos error al usuario, el debounce lo intentará de nuevo
+        }
+      }
     }
   };
 
   const isOutOfStock = product.availableStock === 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
       {/* Imagen del producto */}
-      <div className="aspect-square overflow-hidden relative">
+      <div className="aspect-square overflow-hidden relative flex-none">
         <img
           src={getImageUrl(product.imageUrl)}
           alt={product.name}
@@ -134,7 +161,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
 
       {/* Información del producto */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {product.name}
         </h3>
@@ -208,8 +235,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
           )}
         </div>
 
-        {/* Controles - Altura fija para mantener alineación */}
-        <div className="space-y-3 min-h-[80px] flex flex-col justify-end">
+        {/* Controles - Pegados abajo de la card */}
+        <div className="space-y-3 min-h-[80px] flex flex-col justify-end mt-auto">
           {/* Selector de cantidad */}
           <div className="flex items-center justify-between">
             <label htmlFor={`quantity-${product.id}`} className="text-sm font-medium text-gray-700">
@@ -250,8 +277,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
               onClick={handleAddToCart}
               disabled={isOutOfStock}
               className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isOutOfStock
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
             >
               {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}

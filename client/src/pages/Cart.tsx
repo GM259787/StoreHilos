@@ -77,13 +77,34 @@ const Cart = () => {
     try {
       setIsProcessing(true);
       
-      // Sincronizar carrito con el backend
-      await cartApi.syncCart(items);
+      // Obtener los items más recientes del store antes de sincronizar
+      const currentItems = useCartStore.getState().items;
+      
+      if (currentItems.length === 0) {
+        showWarning('Carrito vacío', 'El carrito está vacío.');
+        setIsProcessing(false);
+        return;
+      }
+      
+      // Sincronizar carrito con el backend - Asegurar que se complete antes de continuar
+      console.log('Sincronizando carrito antes de procesar pedido...', currentItems);
+      try {
+        await cartApi.syncCart(currentItems);
+        console.log('Carrito sincronizado exitosamente');
+      } catch (syncError: any) {
+        console.error('Error sincronizando carrito:', syncError);
+        showError('Error de sincronización', `Error al sincronizar el carrito: ${syncError.response?.data?.message || syncError.message}. Por favor, intenta nuevamente.`);
+        setIsProcessing(false);
+        return;
+      }
+      
+      // Pequeña pausa para asegurar que el backend procesó la sincronización
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       // Preparar datos para la página de opciones de pago
       const orderData = {
         total: finalTotal,
-        items: items,
+        items: currentItems,
         shippingInfo: shippingInfo || {
           shippingAddress: user?.shippingAddress || '',
           shippingCity: user?.shippingCity || '',
@@ -97,6 +118,7 @@ const Cart = () => {
       navigate('/payment', { state: orderData });
       
     } catch (error: any) {
+      console.error('Error procesando pedido:', error);
       showError('Error al procesar pedido', `Error al procesar el pedido: ${error.response?.data?.message || error.message}. Por favor, intenta nuevamente.`);
     } finally {
       setIsProcessing(false);

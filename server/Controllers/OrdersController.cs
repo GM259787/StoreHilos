@@ -109,121 +109,176 @@ public class OrdersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<OrderDto>> CreateOrder([FromBody] CreateOrderDto createOrderDto)
     {
-        var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-        
-        // Obtener el carrito del usuario
-        var cart = await _context.ShoppingCarts
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
-
-        if (cart == null || !cart.CartItems.Any())
+        try
         {
-            return BadRequest(new { message = "El carrito está vacío" });
-        }
-
-        // Verificar stock disponible antes de crear el pedido
-        foreach (var cartItem in cart.CartItems)
-        {
-            var product = cartItem.Product;
-            if (product.AvailableStock < cartItem.Quantity)
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"CreateOrder - UserIdClaim: {userIdClaim}");
+            
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
             {
+                Console.WriteLine($"CreateOrder - Usuario no válido: {userIdClaim}");
+                return Unauthorized(new { message = "Usuario no válido" });
+            }
+
+            Console.WriteLine($"CreateOrder - Buscando carrito para userId: {userId}");
+            
+            // Obtener el carrito del usuario
+            var cart = await _context.ShoppingCarts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart == null)
+            {
+                Console.WriteLine($"CreateOrder - Carrito no encontrado para userId: {userId}");
+                return BadRequest(new { message = "El carrito no existe. Por favor, agrega productos al carrito primero." });
+            }
+
+            if (!cart.CartItems.Any())
+            {
+                Console.WriteLine($"CreateOrder - Carrito vacío para userId: {userId}");
+                return BadRequest(new { message = "El carrito está vacío" });
+            }
+
+            Console.WriteLine($"CreateOrder - Carrito encontrado con {cart.CartItems.Count} items");
+
+            // Verificar que todos los productos existan y tengan stock disponible
+            var invalidItems = new List<string>();
+            foreach (var cartItem in cart.CartItems)
+            {
+                if (cartItem.Product == null)
+                {
+                    Console.WriteLine($"CreateOrder - Producto null para CartItem {cartItem.Id}, ProductId: {cartItem.ProductId}");
+                    invalidItems.Add($"Producto con ID {cartItem.ProductId} no encontrado");
+                    continue;
+                }
+
+                var product = cartItem.Product;
+                if (product.AvailableStock < cartItem.Quantity)
+                {
+                    invalidItems.Add($"No hay suficiente stock para '{product.Name}'. Disponible: {product.AvailableStock}, Solicitado: {cartItem.Quantity}");
+                }
+            }
+
+            if (invalidItems.Any())
+            {
+                Console.WriteLine($"CreateOrder - Errores de validación: {string.Join(", ", invalidItems)}");
                 return BadRequest(new { 
-                    message = $"No hay suficiente stock para el producto '{product.Name}'. Stock disponible: {product.AvailableStock}, solicitado: {cartItem.Quantity}" 
+                    message = "Error al validar el carrito",
+                    errors = invalidItems
                 });
             }
-        }
 
-        // Generar número de pedido único
-        var orderNumber = GenerateOrderNumber();
+            // Generar número de pedido único
+            var orderNumber = GenerateOrderNumber();
 
-        // Calcular totales
-        var subTotal = cart.CartItems.Sum(ci => ci.Product.Price * ci.Quantity);
-        var taxAmount = 0m; // Por ahora sin impuestos
-        
-        // Calcular costo de envío: gratis a partir de $2000, sino $150
-        var shippingAmount = subTotal >= 2000m ? 0m : 150m;
-        
-        var totalAmount = subTotal + taxAmount + shippingAmount;
+            // Calcular totales
+            var subTotal = cart.CartItems.Sum(ci => (ci.Product?.Price ?? 0m) * ci.Quantity);
+            var taxAmount = 0m; // Por ahora sin impuestos
+            
+            // Calcular costo de envío: gratis a partir de $2000, sino $150
+            var shippingAmount = subTotal >= 2000m ? 0m : 150m;
+            
+            var totalAmount = subTotal + taxAmount + shippingAmount;
 
-        // Crear el pedido
-        var order = new Order
-        {
-            UserId = userId,
-            OrderNumber = orderNumber,
-            Status = "Pending",
-            SubTotal = subTotal,
-            TaxAmount = taxAmount,
-            ShippingAmount = shippingAmount,
-            TotalAmount = totalAmount,
-            ShippingAddress = createOrderDto.ShippingAddress,
-            ShippingCity = createOrderDto.ShippingCity,
-            ShippingPostalCode = createOrderDto.ShippingPostalCode,
-            Notes = createOrderDto.Notes
-        };
-
-        _context.Orders.Add(order);
-        await _context.SaveChangesAsync();
-
-        // Crear los items del pedido
-        var orderItems = cart.CartItems.Select(ci => new OrderItem
-        {
-            OrderId = order.Id,
-            ProductId = ci.ProductId,
-            ProductName = ci.Product.Name,
-            ProductPrice = ci.Product.Price,
-            Quantity = ci.Quantity,
-            SubTotal = ci.Product.Price * ci.Quantity
-        }).ToList();
-
-        _context.OrderItems.AddRange(orderItems);
-
-        // RESERVAR PRODUCTOS: Aumentar el stock reservado
-        foreach (var cartItem in cart.CartItems)
-        {
-            var product = cartItem.Product;
-            product.ReservedStock += cartItem.Quantity;
-        }
-
-        // Limpiar el carrito
-        _context.CartItems.RemoveRange(cart.CartItems);
-        _context.ShoppingCarts.Remove(cart);
-
-        await _context.SaveChangesAsync();
-
-        // Obtener el usuario para completar el DTO
-        var user = await _context.Users.FindAsync(userId);
-        
-        // Retornar el pedido creado
-        var orderDto = new OrderDto
-        {
-            Id = order.Id,
-            OrderNumber = order.OrderNumber,
-            Status = order.Status,
-            IsPaid = order.IsPaid,
-            SubTotal = order.SubTotal,
-            TaxAmount = order.TaxAmount,
-            ShippingAmount = order.ShippingAmount,
-            TotalAmount = order.TotalAmount,
-            ShippingAddress = order.ShippingAddress,
-            ShippingCity = order.ShippingCity,
-            ShippingPostalCode = order.ShippingPostalCode,
-            Notes = order.Notes,
-            CreatedAt = order.CreatedAt,
-            CustomerName = user != null ? $"{user.FirstName} {user.LastName}" : "Usuario",
-            CustomerEmail = user?.Email ?? "",
-            Items = orderItems.Select(oi => new OrderItemDto
+            // Crear el pedido
+            var order = new Order
             {
-                Id = oi.Id,
-                ProductId = oi.ProductId,
-                ProductName = oi.ProductName,
-                ProductPrice = oi.ProductPrice,
-                Quantity = oi.Quantity,
-                SubTotal = oi.SubTotal
-            }).ToList()
-        };
+                UserId = userId,
+                OrderNumber = orderNumber,
+                Status = "Pending",
+                SubTotal = subTotal,
+                TaxAmount = taxAmount,
+                ShippingAmount = shippingAmount,
+                TotalAmount = totalAmount,
+                ShippingAddress = createOrderDto.ShippingAddress,
+                ShippingCity = createOrderDto.ShippingCity,
+                ShippingPostalCode = createOrderDto.ShippingPostalCode,
+                Notes = createOrderDto.Notes
+            };
 
-        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, orderDto);
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            // Crear los items del pedido
+            var orderItems = cart.CartItems.Select(ci => new OrderItem
+            {
+                OrderId = order.Id,
+                ProductId = ci.ProductId,
+                ProductName = ci.Product?.Name ?? "Producto desconocido",
+                ProductPrice = ci.Product?.Price ?? 0m,
+                Quantity = ci.Quantity,
+                SubTotal = (ci.Product?.Price ?? 0m) * ci.Quantity
+            }).ToList();
+
+            _context.OrderItems.AddRange(orderItems);
+
+            // RESERVAR PRODUCTOS: Aumentar el stock reservado
+            foreach (var cartItem in cart.CartItems)
+            {
+                if (cartItem.Product != null)
+                {
+                    var product = cartItem.Product;
+                    product.ReservedStock += cartItem.Quantity;
+                }
+            }
+
+            // Limpiar el carrito
+            _context.CartItems.RemoveRange(cart.CartItems);
+            _context.ShoppingCarts.Remove(cart);
+
+            await _context.SaveChangesAsync();
+
+            Console.WriteLine($"CreateOrder - Pedido creado exitosamente: {order.OrderNumber}");
+
+            // Obtener el usuario para completar el DTO
+            var user = await _context.Users.FindAsync(userId);
+            
+            // Retornar el pedido creado
+            var orderDto = new OrderDto
+            {
+                Id = order.Id,
+                OrderNumber = order.OrderNumber,
+                Status = order.Status,
+                IsPaid = order.IsPaid,
+                SubTotal = order.SubTotal,
+                TaxAmount = order.TaxAmount,
+                ShippingAmount = order.ShippingAmount,
+                TotalAmount = order.TotalAmount,
+                ShippingAddress = order.ShippingAddress,
+                ShippingCity = order.ShippingCity,
+                ShippingPostalCode = order.ShippingPostalCode,
+                Notes = order.Notes,
+                CreatedAt = order.CreatedAt,
+                CustomerName = user != null ? $"{user.FirstName} {user.LastName}" : "Usuario",
+                CustomerEmail = user?.Email ?? "",
+                Items = orderItems.Select(oi => new OrderItemDto
+                {
+                    Id = oi.Id,
+                    ProductId = oi.ProductId,
+                    ProductName = oi.ProductName,
+                    ProductPrice = oi.ProductPrice,
+                    Quantity = oi.Quantity,
+                    SubTotal = oi.SubTotal
+                }).ToList()
+            };
+
+            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, orderDto);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"CreateOrder - Error: {ex.Message}");
+            Console.WriteLine($"CreateOrder - StackTrace: {ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"CreateOrder - InnerException: {ex.InnerException.Message}");
+            }
+            return StatusCode(500, new { 
+                message = "Error interno del servidor al crear el pedido",
+                error = ex.Message,
+                details = ex.InnerException?.Message
+            });
+        }
     }
 
     [HttpPut("{id}/cancel")]

@@ -37,7 +37,7 @@ const Header: React.FC = () => {
           </Link>
 
           {/* Navegación + carrito/usuario (alineado a la derecha) */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4 md:space-x-6">
             {/* Navegación desktop (a la derecha, pegada al usuario) */}
             <nav className="hidden md:flex items-center space-x-6">
               {/* Solo mostrar catálogo si NO es armador ni cobrador */}
@@ -112,7 +112,7 @@ const Header: React.FC = () => {
             </nav>
 
             {/* Carrito y usuario */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 md:space-x-4">
               {/* Solo mostrar carrito si NO es armador ni cobrador */}
               {(!user || (user.role !== 'Armador' && user.role !== 'Cobrador')) && (
                 <Link
@@ -192,7 +192,7 @@ const Header: React.FC = () => {
               ) : (
                 <Link
                   to="/auth"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="bg-blue-600 text-white px-3 py-1.5 text-sm rounded-md hover:bg-blue-700 transition-colors md:px-4 md:py-2 md:text-base md:rounded-lg"
                 >
                   Iniciar Sesión
                 </Link>
