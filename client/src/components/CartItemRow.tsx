@@ -1,5 +1,7 @@
 import { CartItem } from '../types/catalog';
 import { useCartStore } from '../store/cart';
+import { useAuthStore } from '../store/auth';
+import { cartApi } from '../api/cart';
 import { formatPrice } from '../utils/currency';
 
 
@@ -10,6 +12,7 @@ interface CartItemRowProps {
 const CartItemRow = ({ item }: CartItemRowProps) => {
   const updateQuantity = useCartStore(state => state.updateQuantity);
   const removeItem = useCartStore(state => state.removeItem);
+  const { isAuthenticated } = useAuthStore();
 
   // URL base del backend para las imágenes
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';
@@ -27,13 +30,36 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
     return encodeURI(`${API_BASE_URL}${imageUrl}`);
   };
 
-  const handleQuantityChange = (newQuantity: number) => {
+  const handleQuantityChange = async (newQuantity: number) => {
     if (newQuantity === 0) {
       if (window.confirm('¿Estás seguro de que quieres eliminar este producto del carrito?')) {
         removeItem(item.id);
+        
+        // Sincronizar inmediatamente con el backend si el usuario está autenticado
+        if (isAuthenticated) {
+          try {
+            const updatedItems = useCartStore.getState().items;
+            await cartApi.syncCart(updatedItems);
+            console.log('Carrito sincronizado inmediatamente después de eliminar producto');
+          } catch (error) {
+            console.error('Error sincronizando carrito inmediatamente:', error);
+          }
+        }
       }
     } else {
       updateQuantity(item.id, newQuantity);
+      
+      // Sincronizar inmediatamente con el backend si el usuario está autenticado
+      if (isAuthenticated) {
+        try {
+          // Obtener los items actualizados del store después de actualizar
+          const updatedItems = useCartStore.getState().items;
+          await cartApi.syncCart(updatedItems);
+          console.log('Carrito sincronizado inmediatamente después de actualizar cantidad');
+        } catch (error) {
+          console.error('Error sincronizando carrito inmediatamente:', error);
+        }
+      }
       // El recálculo de descuentos se maneja automáticamente por useCartSync
     }
   };
@@ -133,7 +159,20 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
 
       {/* Botón eliminar */}
       <button
-        onClick={() => removeItem(item.id)}
+        onClick={async () => {
+          removeItem(item.id);
+          
+          // Sincronizar inmediatamente con el backend si el usuario está autenticado
+          if (isAuthenticated) {
+            try {
+              const updatedItems = useCartStore.getState().items;
+              await cartApi.syncCart(updatedItems);
+              console.log('Carrito sincronizado inmediatamente después de eliminar producto');
+            } catch (error) {
+              console.error('Error sincronizando carrito inmediatamente:', error);
+            }
+          }
+        }}
         className="text-red-500 hover:text-red-700 p-2"
         aria-label="Eliminar del carrito"
       >

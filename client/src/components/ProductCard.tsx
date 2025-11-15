@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+// import { cartApi } from '../api/cart';
+import { cartApi } from '../api/cart';
 import { Product } from '../types/catalog';
 import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
-import { useCartSync } from '../hooks/useCartSync';
+import { useAuthStore } from '../store/auth';
 
 
 interface ProductCardProps {
@@ -11,13 +13,11 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem, items, updateQuantity, removeItem } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
 
   // Obtener la cantidad actual del producto en el carrito
   const cartItem = items.find(item => item.id === product.id);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 1);
-
-  // Sincronizar precios del carrito con el catálogo actual
-  useCartSync();
 
   // Sincronizar la cantidad con el carrito cuando cambie
   useEffect(() => {
@@ -64,7 +64,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     return 0;
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     const currentPrice = getCurrentPrice();
     const discountApplied = quantity >= (product.minQuantityForDiscount || 0);
 
@@ -96,9 +96,23 @@ const ProductCard = ({ product }: ProductCardProps) => {
         });
       }
     }
+
+    // Sincronizar inmediatamente con el backend si el usuario está autenticado
+    // Esto asegura que el backend tenga el producto antes de que el usuario intente comprar
+    if (isAuthenticated) {
+      try {
+        // Obtener los items actualizados del store después de agregar
+        const updatedItems = useCartStore.getState().items;
+        await cartApi.syncCart(updatedItems);
+        console.log('Carrito sincronizado inmediatamente después de agregar producto');
+      } catch (error) {
+        console.error('Error sincronizando carrito inmediatamente:', error);
+        // No mostramos error al usuario, el debounce lo intentará de nuevo
+      }
+    }
   };
 
-  const handleQuantityChange = (newQuantity: number) => {
+  const handleQuantityChange = async (newQuantity: number) => {
     const validQuantity = Math.min(Math.max(0, newQuantity), product.availableStock);
     setQuantity(validQuantity);
 
@@ -109,6 +123,19 @@ const ProductCard = ({ product }: ProductCardProps) => {
         removeItem(product.id);
       } else {
         updateQuantity(product.id, validQuantity);
+      }
+
+      // Sincronizar inmediatamente con el backend si el usuario está autenticado
+      if (isAuthenticated) {
+        try {
+          // Obtener los items actualizados del store después de actualizar
+          const updatedItems = useCartStore.getState().items;
+          await cartApi.syncCart(updatedItems);
+          console.log('Carrito sincronizado inmediatamente después de actualizar cantidad');
+        } catch (error) {
+          console.error('Error sincronizando carrito inmediatamente:', error);
+          // No mostramos error al usuario, el debounce lo intentará de nuevo
+        }
       }
     }
   };
