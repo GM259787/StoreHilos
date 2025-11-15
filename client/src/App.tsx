@@ -19,9 +19,14 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ProductDetail from './pages/ProductDetail';
 import { useAuthStore } from './store/auth';
+import { useCartBackendSync } from './hooks/useCartBackendSync';
 
 function App() {
   const { user } = useAuthStore();
+  
+  // Sincronización centralizada del carrito con el backend
+  // Esto asegura que solo haya una instancia sincronizando, no una por cada ProductCard
+  useCartBackendSync();
 
   // Componente para redirigir según el rol del usuario
   const SmartRedirect = () => {
