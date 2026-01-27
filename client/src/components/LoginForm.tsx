@@ -118,15 +118,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
 
   return (
     <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+      <div className="flex items-center justify-center p-4 rounded-lg">
+        <img
+          src="/src/images/logo_noletras_blanco.svg"
+          alt="Más Hogar Logo"
+          className="h-28"
+        />
+      </div>
+
       <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
         Iniciar Sesión
       </h2>
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -166,6 +168,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
         >
           {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
         </button>
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
       </form>
 
       <div className="mt-6">

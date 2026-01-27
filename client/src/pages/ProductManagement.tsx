@@ -293,13 +293,13 @@ const ProductManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
             Gestión de Productos
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Administra los productos del catálogo
           </p>
         </div>
@@ -308,7 +308,7 @@ const ProductManagement: React.FC = () => {
         <div className="mb-6">
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2.5 sm:py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
           >
             {showCreateForm ? 'Cancelar' : 'Crear Nuevo Producto'}
           </button>
@@ -316,10 +316,10 @@ const ProductManagement: React.FC = () => {
 
         {/* Formulario para crear producto */}
         {showCreateForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Crear Nuevo Producto</h2>
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Crear Nuevo Producto</h2>
             <form onSubmit={handleCreateProduct} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Nombre *
@@ -375,10 +375,10 @@ const ProductManagement: React.FC = () => {
                     required
                     value={createForm.stock}
                     onChange={(e) => setCreateForm({ ...createForm, stock: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
-                <div className="md:col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Imagen del producto
                   </label>
@@ -398,7 +398,7 @@ const ProductManagement: React.FC = () => {
                           reader.readAsDataURL(file);
                         }
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     />
                     {imagePreview && (
                       <div className="mt-2">
@@ -409,12 +409,12 @@ const ProductManagement: React.FC = () => {
                         />
                       </div>
                     )}
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs sm:text-sm text-gray-500">
                       Formatos permitidos: JPG, PNG, GIF, WebP. Máximo 5MB.
                     </div>
                   </div>
                 </div>
-                <div className="md:col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Descripción
                   </label>
@@ -422,22 +422,22 @@ const ProductManagement: React.FC = () => {
                     value={createForm.description}
                     onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
               </div>
-              <div className="flex justify-end space-x-3">
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 text-sm sm:text-base"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={uploadingImage}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {uploadingImage ? 'Subiendo imagen...' : 'Crear Producto'}
                 </button>
@@ -448,10 +448,12 @@ const ProductManagement: React.FC = () => {
 
         {/* Lista de productos */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Productos Existentes</h2>
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg sm:text-xl font-semibold">Productos Existentes</h2>
           </div>
-          <div className="overflow-x-auto">
+          
+          {/* Vista de tabla para desktop */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -530,16 +532,74 @@ const ProductManagement: React.FC = () => {
               </tbody>
             </table>
           </div>
+          
+          {/* Vista de tarjetas para móvil */}
+          <div className="md:hidden divide-y divide-gray-200">
+            {products.map((product) => (
+              <div key={product.id} className="p-4">
+                <div className="flex items-start gap-3">
+                  {product.imageUrl && (
+                    <img
+                      src={getImageUrl(product.imageUrl)}
+                      alt={product.name}
+                      className="h-16 w-16 rounded-lg object-cover flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-gray-900 mb-1">
+                      {product.name}
+                    </h3>
+                    {product.description && (
+                      <p className="text-xs text-gray-500 mb-2 line-clamp-2">
+                        {product.description}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-2 text-xs text-gray-600 mb-2">
+                      <span className="bg-gray-100 px-2 py-1 rounded">
+                        {categories.find(c => c.id === product.categoryId)?.name || 'Sin categoría'}
+                      </span>
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
+                        {formatPrice(product.price)}
+                      </span>
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                        Stock: {product.stock}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => startEditing(product)}
+                        className="text-xs text-blue-600 hover:text-blue-900 px-2 py-1 border border-blue-300 rounded"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => startDiscountConfig(product)}
+                        className="text-xs text-green-600 hover:text-green-900 px-2 py-1 border border-green-300 rounded"
+                      >
+                        Descuentos
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="text-xs text-red-600 hover:text-red-900 px-2 py-1 border border-red-300 rounded"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Modal de edición */}
         {editingProduct && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Editar Producto</h2>
+              <div className="p-4 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4">Editar Producto</h2>
                 <form onSubmit={handleUpdateProduct} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Nombre
@@ -548,7 +608,7 @@ const ProductManagement: React.FC = () => {
                         type="text"
                         value={updateForm.name || ''}
                         onChange={(e) => setUpdateForm({ ...updateForm, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                       />
                     </div>
                     <div>
@@ -558,7 +618,7 @@ const ProductManagement: React.FC = () => {
                       <select
                         value={updateForm.categoryId || 0}
                         onChange={(e) => setUpdateForm({ ...updateForm, categoryId: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                       >
                         <option value={0}>Mantener categoría actual</option>
                         {categories.map(category => (
@@ -578,7 +638,7 @@ const ProductManagement: React.FC = () => {
                         min="0"
                         value={updateForm.price || ''}
                         onChange={(e) => setUpdateForm({ ...updateForm, price: parseFloat(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                         placeholder="0.00"
                       />
                     </div>
@@ -591,10 +651,10 @@ const ProductManagement: React.FC = () => {
                         min="0"
                         value={updateForm.stock || ''}
                         onChange={(e) => setUpdateForm({ ...updateForm, stock: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                       />
                     </div>
-                    <div className="md:col-span-2">
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Imagen del producto
                       </label>
@@ -638,14 +698,14 @@ const ProductManagement: React.FC = () => {
                               reader.readAsDataURL(file);
                             }
                           }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         />
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs sm:text-sm text-gray-500">
                           Deja vacío para mantener la imagen actual. Formatos: JPG, PNG, GIF, WebP. Máximo 5MB.
                         </div>
                       </div>
                     </div>
-                    <div className="md:col-span-2">
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Descripción
                       </label>
@@ -653,25 +713,25 @@ const ProductManagement: React.FC = () => {
                         value={updateForm.description || ''}
                         onChange={(e) => setUpdateForm({ ...updateForm, description: e.target.value })}
                         rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                       />
                     </div>
                   </div>
-                  <div className="flex justify-end space-x-3 pt-4">
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
                     <button
                       type="button"
                       onClick={() => {
                         setEditingProduct(null);
                         setUpdateForm({});
                       }}
-                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 text-sm sm:text-base"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={updatingImage}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base"
                     >
                       {updatingImage ? 'Subiendo imagen...' : 'Actualizar Producto'}
                     </button>

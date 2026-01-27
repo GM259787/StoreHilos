@@ -167,23 +167,23 @@ const ProductDetail: React.FC = () => {
     }
 
     return ( 
-        <div className="min-h-screen bg-gray-50 py-12 relative">
+        <div className="min-h-screen bg-gray-50 py-4 sm:py-12 relative">
             {/* Back button - Absolute positioned */}
             <button
                 onClick={() => window.history.back()}
-                className="fixed top-24 left-6 z-10 bg-white hover:bg-gray-50 text-gray-700 font-medium px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
+                className="fixed top-20 sm:top-24 left-4 sm:left-6 z-10 bg-white hover:bg-gray-50 text-gray-700 font-medium px-3 py-2 sm:px-4 sm:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
             >
-                <div className="flex items-center space-x-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                    <span>Volver</span>
+                    <span className="text-sm sm:text-base">Volver</span>
                 </div>
             </button>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Main product container */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-white rounded-lg sm:rounded-2xl shadow-lg overflow-hidden">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                         {/* Imagen del producto */}
                         <div className="relative bg-gray-100">
@@ -196,37 +196,37 @@ const ProductDetail: React.FC = () => {
                             </div>
                             {/* Badge de oferta */}
                             {Item.isDiscountActive && Item.discountedPrice && (
-                                <div className="absolute top-6 right-6 bg-red-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg">
+                                <div className="absolute top-3 right-3 sm:top-6 sm:right-6 bg-red-500 text-white text-xs sm:text-sm font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-lg">
                                     OFERTA ESPECIAL
                                 </div>
                             )}
                         </div>
 
                         {/* Información del producto */}
-                        <div className="p-8 lg:p-12 flex flex-col justify-center">
-                            <div className="space-y-8">
+                        <div className="p-4 sm:p-8 lg:p-12 flex flex-col justify-center">
+                            <div className="space-y-4 sm:space-y-8">
                                 {/* Header */}
-                                <div className="border-b border-gray-200 pb-6">
-                                    <h1 className="text-4xl font-bold text-gray-900 mb-4">{Item.name}</h1>
+                                <div className="border-b border-gray-200 pb-4 sm:pb-6">
+                                    <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">{Item.name}</h1>
                                     {Item.description && (
-                                        <p className="text-lg text-gray-600 leading-relaxed">{Item.description}</p>
+                                        <p className="text-sm sm:text-lg text-gray-600 leading-relaxed">{Item.description}</p>
                                     )}
                                 </div>
 
                                 {/* Pricing section */}
-                                <div className="bg-gray-50 rounded-xl p-6">
+                                <div className="bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6">
                                     {Item.isDiscountActive && Item.discountedPrice ? (
-                                        <div className="space-y-3">
-                                            <div className="flex items-baseline space-x-3">
-                                                <span className="text-2xl text-gray-500 line-through font-medium">
+                                        <div className="space-y-2 sm:space-y-3">
+                                            <div className="flex items-baseline space-x-2 sm:space-x-3">
+                                                <span className="text-lg sm:text-2xl text-gray-500 line-through font-medium">
                                                     {formatPrice(Item.price)}
                                                 </span>
-                                                <span className="text-4xl font-bold text-green-600">
+                                                <span className="text-2xl sm:text-4xl font-bold text-green-600">
                                                     {formatPrice(Item.discountedPrice)}
                                                 </span>
                                             </div>
-                                            <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg">
-                                                <p className="text-sm font-medium">
+                                            <div className="bg-green-100 text-green-800 px-3 sm:px-4 py-2 rounded-lg">
+                                                <p className="text-xs sm:text-sm font-medium">
                                                     💰 ¡Ahorra {formatPrice(getSavings())} por unidad!
                                                 </p>
                                                 <p className="text-xs mt-1">
@@ -235,18 +235,18 @@ const ProductDetail: React.FC = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="text-4xl font-bold text-gray-900">
+                                        <div className="text-2xl sm:text-4xl font-bold text-gray-900">
                                             {formatPrice(Item.price)}
                                         </div>
                                     )}
 
                                     {/* Precio actual según cantidad seleccionada */}
                                     {Item.isDiscountActive && Item.minQuantityForDiscount && Item.discountedPrice && (
-                                        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                                            <div className="text-sm text-blue-800">
+                                        <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 rounded-lg">
+                                            <div className="text-xs sm:text-sm text-blue-800">
                                                 <strong>Precio para {quantity} unidades:</strong>
                                             </div>
-                                            <div className="text-2xl font-bold text-blue-900">
+                                            <div className="text-xl sm:text-2xl font-bold text-blue-900">
                                                 {formatPrice(getCurrentPrice())} c/u
                                             </div>
                                             {quantity >= Item.minQuantityForDiscount && (
@@ -264,22 +264,22 @@ const ProductDetail: React.FC = () => {
                                 </div>
 
                                 {/* Stock information */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-blue-50 rounded-lg p-4 text-center">
-                                        <p className="text-sm text-blue-600 font-medium mb-1">Stock Disponible</p>
-                                        <p className="text-2xl font-bold text-blue-900">{Item.availableStock}</p>
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                    <div className="bg-blue-50 rounded-lg p-3 sm:p-4 text-center">
+                                        <p className="text-xs sm:text-sm text-blue-600 font-medium mb-1">Stock Disponible</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-blue-900">{Item.availableStock}</p>
                                     </div>
-                                    <div className="bg-gray-50 rounded-lg p-4 text-center">
-                                        <p className="text-sm text-gray-600 font-medium mb-1">Stock Total</p>
-                                        <p className="text-2xl font-bold text-gray-900">{Item.stock}</p>
+                                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4 text-center">
+                                        <p className="text-xs sm:text-sm text-gray-600 font-medium mb-1">Stock Total</p>
+                                        <p className="text-xl sm:text-2xl font-bold text-gray-900">{Item.stock}</p>
                                     </div>
                                 </div>
 
                                 {/* Quantity and Cart Controls */}
-                                <div className="space-y-4">
+                                <div className="space-y-3 sm:space-y-4">
                                     {/* Selector de cantidad */}
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium text-gray-700">
+                                        <label className="text-xs sm:text-sm font-medium text-gray-700">
                                             Cantidad:
                                         </label>
                                         <div className="flex items-center border border-gray-300 rounded-lg">
@@ -297,7 +297,7 @@ const ProductDetail: React.FC = () => {
                                                 max={Item.availableStock}
                                                 value={quantity}
                                                 onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-                                                className="w-16 text-center border-0 focus:ring-0 text-sm"
+                                                className="w-12 sm:w-16 text-center border-0 focus:ring-0 text-sm"
                                             />
                                             <button
                                                 type="button"
@@ -311,12 +311,12 @@ const ProductDetail: React.FC = () => {
                                     </div>
 
                                     {/* Cart Actions */}
-                                    <div className="pt-4 border-t border-gray-200 space-y-3">
+                                    <div className="pt-3 sm:pt-4 border-t border-gray-200 space-y-2 sm:space-y-3">
                                         {!cartItem ? (
                                             <button
                                                 onClick={handleAddToCart}
                                                 disabled={isOutOfStock}
-                                                className={`w-full px-8 py-4 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl ${
+                                                className={`w-full px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl ${
                                                     isOutOfStock
                                                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                                         : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 transform hover:scale-105'
@@ -326,17 +326,17 @@ const ProductDetail: React.FC = () => {
                                             </button>
                                         ) : (
                                             <div className="space-y-2">
-                                                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                                <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
                                                     <div className="flex items-center justify-center space-x-2 text-green-700">
-                                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
                                                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                         </svg>
-                                                        <span className="font-medium">Producto en el carrito ({cartItem.quantity} unidades)</span>
+                                                        <span className="text-xs sm:text-sm font-medium">Producto en el carrito ({cartItem.quantity} unidades)</span>
                                                     </div>
                                                 </div>
                                                 <button
                                                     onClick={handleRemoveFromCart}
-                                                    className="w-full px-8 py-3 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-colors"
+                                                    className="w-full px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-colors"
                                                 >
                                                     🗑️ Quitar del carrito
                                                 </button>
@@ -350,7 +350,7 @@ const ProductDetail: React.FC = () => {
                 </div>
 
                 {/* Additional spacing at bottom */}
-                <div className="mt-12"></div>
+                <div className="mt-6 sm:mt-12"></div>
             </div>
         </div>
     )

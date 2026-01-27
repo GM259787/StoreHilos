@@ -158,28 +158,28 @@ const Cart = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Carrito de Compras</h1>
-        <p className="mt-2 text-gray-600">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Carrito de Compras</h1>
+        <p className="mt-2 text-sm sm:text-base text-gray-600">
           {totalItems} {totalItems === 1 ? 'producto' : 'productos'} en tu carrito
         </p>
         
         {/* Leyenda de envío gratis - solo mostrar si está habilitado */}
         {enableFreeShipping && (
-          <div className="mt-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center">
+          <div className="mt-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-3 sm:p-4">
+            <div className="flex items-start sm:items-center gap-2 sm:gap-3">
               <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-semibold text-green-800">
+              <div className="flex-1">
+                <h3 className="text-xs sm:text-sm font-semibold text-green-800">
                   🚚 ¡Envío GRATIS a partir de ${freeShippingThreshold.toLocaleString()}!
                 </h3>
-                <p className="text-sm text-green-700 mt-1">
+                <p className="text-xs sm:text-sm text-green-700 mt-1">
                   Lleva productos por ${freeShippingThreshold.toLocaleString()} o más y no pagues envío.
                 </p>
               </div>
@@ -189,15 +189,15 @@ const Cart = () => {
       </div>
 
       {/* Lista de productos */}
-      <div className="space-y-4 mb-8">
+      <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
         {items.map((item) => (
           <CartItemRow key={item.id} item={item} />
         ))}
       </div>
 
       {/* Resumen */}
-      <div className="bg-gray-50 rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Resumen del pedido</h2>
+      <div className="bg-gray-50 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Resumen del pedido</h2>
         
         {/* Estado de datos de envío */}
         {user?.shippingAddress && (
@@ -207,29 +207,29 @@ const Cart = () => {
                 <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-sm text-green-600 font-medium">Dirección configurada</span>
+                <span className="text-xs sm:text-sm text-green-600 font-medium">Dirección configurada</span>
               </div>
               <button
                 onClick={() => setShowShippingForm(true)}
-                className="text-sm text-blue-600 hover:text-blue-800 underline"
+                className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 underline"
               >
                 Modificar
               </button>
             </div>
-            <div className="mt-2 text-sm text-gray-600">
-              <p>{user.shippingAddress}, {user.shippingCity} {user.shippingPostalCode}</p>
+            <div className="mt-2 text-xs sm:text-sm text-gray-600">
+              <p className="break-words">{user.shippingAddress}, {user.shippingCity} {user.shippingPostalCode}</p>
               {user.shippingPhone && <p>Tel: {user.shippingPhone}</p>}
             </div>
           </div>
         )}
         
         <div className="space-y-2">
-          <div className="flex justify-between">
+          <div className="flex justify-between text-sm sm:text-base">
             <span className="text-gray-600">Productos ({totalItems}):</span>
             <span className="font-medium">{formatPrice(totalPrice)}</span>
           </div>
           
-          <div className="flex justify-between">
+          <div className="flex justify-between text-sm sm:text-base">
             <span className="text-gray-600">Envío:</span>
             <span className="font-medium">
               {calculatedShippingCost === 0 ? (
@@ -245,40 +245,42 @@ const Cart = () => {
           </div>
           
           {enableFreeShipping && totalPrice < freeShippingThreshold && (
-            <div className="text-sm text-blue-600 bg-blue-50 border border-blue-200 p-3 rounded-lg">
-              <div className="flex items-center">
-                <span className="text-lg mr-2">💡</span>
-                <span className="font-medium">
-                  Agrega ${(freeShippingThreshold - totalPrice).toLocaleString()} más para envío gratis
-                </span>
+            <div className="text-xs sm:text-sm text-blue-600 bg-blue-50 border border-blue-200 p-3 rounded-lg">
+              <div className="flex items-start sm:items-center gap-2">
+                <span className="text-base sm:text-lg">💡</span>
+                <div className="flex-1">
+                  <span className="font-medium">
+                    Agrega ${(freeShippingThreshold - totalPrice).toLocaleString()} más para envío gratis
+                  </span>
+                  <p className="text-xs text-blue-500 mt-1">
+                    Ahorra ${shippingCost.toLocaleString()} en envío
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-blue-500 mt-1">
-                Ahorra ${shippingCost.toLocaleString()} en envío
-              </p>
             </div>
           )}
           
           <div className="border-t pt-2">
             <div className="flex justify-between">
-              <span className="text-lg font-semibold text-gray-900">Total:</span>
-              <span className="text-lg font-bold text-gray-900">{formatPrice(finalTotal)}</span>
+              <span className="text-base sm:text-lg font-semibold text-gray-900">Total:</span>
+              <span className="text-base sm:text-lg font-bold text-gray-900">{formatPrice(finalTotal)}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Acciones */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <button
           onClick={handleClearCart}
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex-1 px-4 py-2.5 sm:py-2 text-sm sm:text-base border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors"
         >
           Vaciar carrito
         </button>
         
         <Link
           to="/"
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors text-center"
+          className="flex-1 px-4 py-2.5 sm:py-2 text-sm sm:text-base border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors text-center"
         >
           Seguir comprando
         </Link>
@@ -286,7 +288,7 @@ const Cart = () => {
         <button
           onClick={handleAdvanceOrder}
           disabled={isProcessing}
-          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-3 sm:py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >
           {isProcessing ? 'Procesando...' : 'Avanzar pedido'}
         </button>

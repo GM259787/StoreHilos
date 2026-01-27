@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plesk-git", "plesk-git", "{6283845B-192A-5BB9-0084-18EE52A90829}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "server\Server.csproj", "{3461765F-60A1-21BC-764E-FC799869FE2F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "plesk-git\Server.csproj", "{6FB3FDF7-12F8-9CF6-DD20-D787E06E797A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3461765F-60A1-21BC-764E-FC799869FE2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3461765F-60A1-21BC-764E-FC799869FE2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3461765F-60A1-21BC-764E-FC799869FE2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3461765F-60A1-21BC-764E-FC799869FE2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FB3FDF7-12F8-9CF6-DD20-D787E06E797A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FB3FDF7-12F8-9CF6-DD20-D787E06E797A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FB3FDF7-12F8-9CF6-DD20-D787E06E797A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FB3FDF7-12F8-9CF6-DD20-D787E06E797A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6FB3FDF7-12F8-9CF6-DD20-D787E06E797A} = {6283845B-192A-5BB9-0084-18EE52A90829}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3E3215E4-AA45-4D45-B703-6A50AFD89171}
+	EndGlobalSection
+EndGlobal
