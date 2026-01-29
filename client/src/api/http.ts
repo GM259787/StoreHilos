@@ -116,25 +116,25 @@ export const getApi = async (): Promise<AxiosInstance> => {
 
 // Objeto API con métodos que esperan la inicialización
 const api = {
-  get: async (url: string, config?: any) => {
+  get: async <T = any>(url: string, config?: any) => {
     const instance = await initializeApi();
-    return instance.get(url, config);
+    return instance.get<T>(url, config);
   },
-  post: async (url: string, data?: any, config?: any) => {
+  post: async <T = any>(url: string, data?: any, config?: any) => {
     const instance = await initializeApi();
-    return instance.post(url, data, config);
+    return instance.post<T>(url, data, config);
   },
-  put: async (url: string, data?: any, config?: any) => {
+  put: async <T = any>(url: string, data?: any, config?: any) => {
     const instance = await initializeApi();
-    return instance.put(url, data, config);
+    return instance.put<T>(url, data, config);
   },
-  delete: async (url: string, config?: any) => {
+  delete: async <T = any>(url: string, config?: any) => {
     const instance = await initializeApi();
-    return instance.delete(url, config);
+    return instance.delete<T>(url, config);
   },
-  patch: async (url: string, data?: any, config?: any) => {
+  patch: async <T = any>(url: string, data?: any, config?: any) => {
     const instance = await initializeApi();
-    return instance.patch(url, data, config);
+    return instance.patch<T>(url, data, config);
   },
 };
 

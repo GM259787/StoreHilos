@@ -14,7 +14,7 @@ import { cartApi } from '../api/cart';
 export const useCartBackendSync = () => {
   const { items } = useCartStore();
   const { isAuthenticated } = useAuthStore();
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeoutRef = useRef<number | null>(null);
   const lastItemsHashRef = useRef<string>('');
   const lastSyncTimeRef = useRef<number>(0);
 

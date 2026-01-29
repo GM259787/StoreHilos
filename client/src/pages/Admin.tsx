@@ -42,7 +42,7 @@ const Admin = () => {
   const { refreshInterval, enableNotifications } = useOrderNotifications({
     orders,
     onRefresh: loadOrdersCallback,
-    enabled: user && (user.role === 'Armador' || user.role === 'Cobrador'),
+    enabled: !!(user && (user.role === 'Armador' || user.role === 'Cobrador')),
     onNewOrders: (count) => {
       setNewOrdersCount(count);
       // Resetear el contador después de 5 segundos

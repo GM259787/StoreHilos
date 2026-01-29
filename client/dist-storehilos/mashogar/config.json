@@ -1,0 +1,34 @@
+{
+  "siteId": "mashogar",
+  "companyName": "Más Hogar",
+  "description": "En MasHogar queremos que comprar cosas para tu casa sea fácil. Somos una tienda online de Uruguay con productos innovadores.",
+  "apiUrl": "http://localhost:5175",
+  "logo": "/src/images/mashogar_logo.svg",
+  "logoAlt": "/src/images/logo_noletras_blanco.svg",
+  "colors": {
+    "primary": "#04b4fc",
+    "secondary": "#14bcfc",
+    "accent": "#24b4fc",
+    "background": "#f9fafb",
+    "text": "#1f2937"
+  },
+  "contact": {
+    "email": "contacto@mashogar.uy",
+    "phone": "+598 XX XXX XXX",
+    "whatsapp": "+598XXXXXXXXX",
+    "whatsappMessage": "Hola, quiero hacer una consulta sobre productos para el hogar"
+  },
+  "social": {
+    "facebook": "https://facebook.com/mashogar",
+    "instagram": "https://instagram.com/mashogar"
+  },
+  "shipping": {
+    "enableFreeShipping": true,
+    "freeShippingThreshold": 2000,
+    "shippingCost": 150
+  },
+  "orders": {
+    "refreshInterval": 3,
+    "enableNotifications": true
+  }
+}
