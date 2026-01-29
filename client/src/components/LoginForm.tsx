@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
+import { useTheme } from '../config/theme';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
+  const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const { login, isLoading, error, clearError } = useAuthStore();
+
+  if (!theme) {
+    return <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">Cargando...</div>;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,9 +126,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-center p-4 rounded-lg">
         <img
-          src="/src/images/logo_noletras_blanco.svg"
-          alt="Más Hogar Logo"
-          className="h-28"
+          src={theme.logoAlt || theme.logo}
+          alt={`${theme.companyName} Logo`}
+          className="h-24"
         />
       </div>
 

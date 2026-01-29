@@ -1,0 +1,34 @@
+{
+  "siteId": "storehilos",
+  "companyName": "Store Hilos",
+  "description": "Tu tienda de hilos y accesorios de costura de confianza en Uruguay. Encuentra todo lo que necesitas para tus proyectos de costura.",
+  "apiUrl": "http://localhost:5175",
+  "logo": "/src/images/logo_hilos.svg",
+  "logoAlt": "/src/images/store_hilos_doble-cropped.svg",
+  "colors": {
+    "primary": "#042b83",
+    "secondary": "#2e488c",
+    "accent": "#3c5c98",
+    "background": "#f9fafb",
+    "text": "#1f2937"
+  },
+  "contact": {
+    "email": "contacto@storehilos.uy",
+    "phone": "+598 94 288 006",
+    "whatsapp": "+59894288006",
+    "whatsappMessage": "Hola, quiero hacer una consulta sobre productos de costura"
+  },
+  "social": {
+    "facebook": "https://facebook.com/storehilos",
+    "instagram": "https://instagram.com/storehilos"
+  },
+  "shipping": {
+    "enableFreeShipping": true,
+    "freeShippingThreshold": 2000,
+    "shippingCost": 150
+  },
+  "orders": {
+    "refreshInterval": 3,
+    "enableNotifications": true
+  }
+}

@@ -285,7 +285,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               disabled={isOutOfStock}
               className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isOutOfStock
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-primary-600 text-white hover:bg-primary-700'
                 }`}
             >
               {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}

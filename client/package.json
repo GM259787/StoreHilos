@@ -4,10 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 5173",
+    "dev": "vite --port 5176",
+    "dev:storehilos": "cross-env VITE_SITE_ID=storehilos vite --port 5176",
+    "dev:mashogar": "cross-env VITE_SITE_ID=mashogar vite --port 5176",
     "build": "tsc && vite build",
+    "build:storehilos": "cross-env VITE_SITE_ID=storehilos tsc && vite build --mode storehilos",
+    "build:mashogar": "cross-env VITE_SITE_ID=mashogar tsc && vite build --mode mashogar",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:storehilos": "cross-env VITE_SITE_ID=storehilos vite preview",
+    "preview:mashogar": "cross-env VITE_SITE_ID=mashogar vite preview"
   },
   "dependencies": {
     "@mercadopago/sdk-react": "^1.0.5",
@@ -26,6 +32,7 @@
     "@typescript-eslint/parser": "^6.10.0",
     "@vitejs/plugin-react": "^4.1.0",
     "autoprefixer": "^10.4.16",
+    "cross-env": "^7.0.3",
     "eslint": "^8.53.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-react-hooks": "^4.6.0",

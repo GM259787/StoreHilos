@@ -8,7 +8,11 @@ using Server.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar servicios básicos
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -32,6 +36,8 @@ builder.Services.AddCors(options =>
                 "http://localhost:5173",
                 "http://localhost:5174",
                 "http://localhost:5175",
+                "http://localhost:5176",
+                "http://localhost:5177",
                 "https://storehilos.uy",
                 "https://www.storehilos.uy"
             )

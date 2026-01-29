@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import ThemeProvider from './components/ThemeProvider';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -14,6 +15,7 @@ import TransferConfirmation from './pages/TransferConfirmation';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailure from './pages/PaymentFailure';
 import PaymentPending from './pages/PaymentPending';
+import PaymentReturn from './pages/PaymentReturn';
 import GoogleAuthCallback from './pages/GoogleAuthCallback';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -42,33 +44,36 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<SmartRedirect />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/auth" element={user ? <Navigate to="/" /> : <Auth />} />
-            <Route path="/orders" element={user ? <Orders /> : <Navigate to="/auth" />} />
-            <Route path="/admin" element={user ? <Admin /> : <Navigate to="/auth" />} />
-            <Route path="/products" element={user && user.role === 'Cobrador' ? <ProductManagement /> : <Navigate to="/auth" />} />
-            <Route path="/categories" element={user && user.role === 'Cobrador' ? <Categories /> : <Navigate to="/auth" />} />
-            <Route path="/payment" element={user ? <PaymentOptions /> : <Navigate to="/auth" />} />
-            <Route path="/payment/transfer" element={user ? <TransferConfirmation /> : <Navigate to="/auth" />} />
-            <Route path="/payment/success" element={<PaymentSuccess />} />
-            <Route path="/payment/failure" element={<PaymentFailure />} />
-            <Route path="/payment/pending" element={<PaymentPending />} />
-            <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-          </Routes>
-        </main>
-        <Footer />
-        <WhatsAppButton />
-      </div>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<SmartRedirect />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/auth" element={user ? <Navigate to="/" /> : <Auth />} />
+              <Route path="/orders" element={user ? <Orders /> : <Navigate to="/auth" />} />
+              <Route path="/admin" element={user ? <Admin /> : <Navigate to="/auth" />} />
+              <Route path="/products" element={user && user.role === 'Cobrador' ? <ProductManagement /> : <Navigate to="/auth" />} />
+              <Route path="/categories" element={user && user.role === 'Cobrador' ? <Categories /> : <Navigate to="/auth" />} />
+              <Route path="/payment" element={user ? <PaymentOptions /> : <Navigate to="/auth" />} />
+              <Route path="/payment/transfer" element={user ? <TransferConfirmation /> : <Navigate to="/auth" />} />
+              <Route path="/payment/return" element={<PaymentReturn />} />
+              <Route path="/payment/success" element={<PaymentSuccess />} />
+              <Route path="/payment/failure" element={<PaymentFailure />} />
+              <Route path="/payment/pending" element={<PaymentPending />} />
+              <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+            </Routes>
+          </main>
+          <Footer />
+          <WhatsAppButton />
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 }
 

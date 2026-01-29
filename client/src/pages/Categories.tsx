@@ -134,7 +134,7 @@ const Categories = () => {
         <div className="mb-6">
           <button
             onClick={handleCancel}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="text-primary-600 hover:text-primary-800 font-medium"
           >
             ← Volver a Categorías
           </button>
@@ -196,7 +196,7 @@ const Categories = () => {
       <div className="mb-6">
         <button
           onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         >
           + Nueva Categoría
         </button>
@@ -205,7 +205,7 @@ const Categories = () => {
       {/* Lista de Categorías */}
       {isLoading ? (
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Cargando categorías...</p>
         </div>
       ) : error ? (
@@ -217,7 +217,7 @@ const Categories = () => {
           <p className="mt-2 text-sm text-gray-500">{error}</p>
           <button
             onClick={loadCategories}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
           >
             Reintentar
           </button>
@@ -244,7 +244,7 @@ const Categories = () => {
                         <h3 className="text-lg font-medium text-gray-900 truncate">
                           {category.name}
                         </h3>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                           {category.slug}
                         </span>
                       </div>
@@ -252,7 +252,7 @@ const Categories = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleEdit(category)}
-                        className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
+                        className="px-3 py-1 text-sm text-primary-600 hover:text-primary-800 hover:bg-primary-50 rounded-md"
                       >
                         Editar
                       </button>

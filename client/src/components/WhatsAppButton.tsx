@@ -1,6 +1,14 @@
+import { useTheme } from '../config/theme';
+
 const WhatsAppButton = () => {
-  const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER;
-  const whatsappMessage = import.meta.env.VITE_WHATSAPP_MSG;
+  const theme = useTheme();
+  const whatsappMessage = theme?.contact?.whatsappMessage;
+
+  if (!theme) {
+    return null;
+  }
+
+  const whatsappNumber = theme.contact.whatsapp;
 
   const handleClick = () => {
     const number = whatsappNumber?.replace('+', '') || '';

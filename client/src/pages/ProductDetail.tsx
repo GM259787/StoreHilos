@@ -319,7 +319,7 @@ const ProductDetail: React.FC = () => {
                                                 className={`w-full px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl ${
                                                     isOutOfStock
                                                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                        : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 transform hover:scale-105'
+                                                        : 'bg-primary-600 text-white hover:bg-primary-700 transform hover:scale-105'
                                                 }`}
                                             >
                                                 {isOutOfStock ? 'Sin stock disponible' : '🛒 Agregar al carrito'}

@@ -62,7 +62,7 @@ const Orders: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       </div>
     );
@@ -151,7 +151,7 @@ const Orders: React.FC = () => {
                 </div>
                 <div className="flex justify-between text-lg font-semibold border-t border-gray-200 pt-2">
                   <span className="text-gray-900">Total:</span>
-                  <span className="text-blue-600">{formatPrice(order.totalAmount)}</span>
+                  <span className="text-primary-600">{formatPrice(order.totalAmount)}</span>
                 </div>
               </div>
 
@@ -165,8 +165,8 @@ const Orders: React.FC = () => {
 
 
 
-              <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                <p className="text-sm text-blue-800">
+              <div className="mt-4 p-3 bg-primary-50 rounded-md">
+                <p className="text-sm text-primary-800">
                   <span className="font-medium">Dirección de envío:</span><br />
                   {order.shippingAddress}<br />
                   {order.shippingCity}, {order.shippingPostalCode}

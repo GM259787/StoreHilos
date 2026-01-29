@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { useCartStore } from '../store/cart';
+import { useTheme } from '../config/theme';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { user, logout } = useAuthStore();
   const { getTotalItems } = useCartStore();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -15,6 +17,10 @@ const Header: React.FC = () => {
     navigate('/');
   };
 
+  if (!theme) {
+    return null;
+  }
+
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,9 +28,9 @@ const Header: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img
-              src="/src/images/logo_full_fondo_blanco.svg"
-              alt="Más Hogar Logo"
-              className="h-40"
+              src={theme.logo}
+              alt={`${theme.companyName} Logo`}
+              className="h-16"
             />
           </Link>
 
@@ -38,7 +44,7 @@ const Header: React.FC = () => {
                   <NavLink
                     to="/"
                     className={({ isActive }) =>
-                      `px-1 pb-1 transition-colors ${isActive ? 'text-blue-600 border-b-2 border-blue-600 font-semibold' : 'text-gray-700 hover:text-blue-600'
+                      `px-1 pb-1 transition-colors ${isActive ? 'text-primary-600 border-b-2 border-primary-600 font-semibold' : 'text-gray-700 hover:text-primary-600'
                       }`
                     }
                     end
@@ -54,7 +60,7 @@ const Header: React.FC = () => {
                       <NavLink
                         to="/orders"
                         className={({ isActive }) =>
-                          `px-1 pb-1 transition-colors ${isActive ? 'text-blue-600 border-b-2 border-blue-600 font-semibold' : 'text-gray-700 hover:text-blue-600'
+                          `px-1 pb-1 transition-colors ${isActive ? 'text-primary-600 border-b-2 border-primary-600 font-semibold' : 'text-gray-700 hover:text-primary-600'
                           }`
                         }
                       >
@@ -67,7 +73,7 @@ const Header: React.FC = () => {
                       <NavLink
                         to="/admin"
                         className={({ isActive }) =>
-                          `px-1 pb-1 transition-colors ${isActive ? 'text-blue-600 border-b-2 border-blue-600 font-semibold' : 'text-gray-700 hover:text-blue-600'
+                          `px-1 pb-1 transition-colors ${isActive ? 'text-primary-600 border-b-2 border-primary-600 font-semibold' : 'text-gray-700 hover:text-primary-600'
                           }`
                         }
                       >
@@ -80,7 +86,7 @@ const Header: React.FC = () => {
                       <NavLink
                         to="/products"
                         className={({ isActive }) =>
-                          `px-1 pb-1 transition-colors ${isActive ? 'text-blue-600 border-b-2 border-blue-600 font-semibold' : 'text-gray-700 hover:text-blue-600'
+                          `px-1 pb-1 transition-colors ${isActive ? 'text-primary-600 border-b-2 border-primary-600 font-semibold' : 'text-gray-700 hover:text-primary-600'
                           }`
                         }
                       >
@@ -93,7 +99,7 @@ const Header: React.FC = () => {
                       <NavLink
                         to="/categories"
                         className={({ isActive }) =>
-                          `px-1 pb-1 transition-colors ${isActive ? 'text-blue-600 border-b-2 border-blue-600 font-semibold' : 'text-gray-700 hover:text-blue-600'
+                          `px-1 pb-1 transition-colors ${isActive ? 'text-primary-600 border-b-2 border-primary-600 font-semibold' : 'text-gray-700 hover:text-primary-600'
                           }`
                         }
                       >
@@ -111,7 +117,7 @@ const Header: React.FC = () => {
                 {(!user || (user.role !== 'Armador' && user.role !== 'Cobrador')) && (
                   <Link
                     to="/cart"
-                    className="relative text-gray-700 hover:text-blue-600 transition-colors p-2"
+                    className="relative text-gray-700 hover:text-primary-600 transition-colors p-2"
                   >
                     {/* Icono del carrito más grande y claro */}
                     <svg
@@ -142,7 +148,7 @@ const Header: React.FC = () => {
                   <div className="relative">
                     <button
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className="hidden md:flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+                      className="hidden md:flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors"
                     >
                       {user.googlePicture && (
                         <img
@@ -189,7 +195,7 @@ const Header: React.FC = () => {
                 ) : (
                   <Link
                     to="/auth"
-                    className="hidden md:block px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                    className="hidden md:block px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors"
                   >
                     Iniciar Sesión
                   </Link>
@@ -229,7 +235,7 @@ const Header: React.FC = () => {
                   <NavLink
                     to="/"
                     className={({ isActive }) =>
-                      `block px-4 py-3 ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
+                      `block px-4 py-3 ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
                     }
                     onClick={() => setIsMobileMenuOpen(false)}
                     end
@@ -245,7 +251,7 @@ const Header: React.FC = () => {
                       <NavLink
                         to="/orders"
                         className={({ isActive }) =>
-                          `block px-4 py-3 ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
+                          `block px-4 py-3 ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
                         }
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -258,7 +264,7 @@ const Header: React.FC = () => {
                       <NavLink
                         to="/admin"
                         className={({ isActive }) =>
-                          `block px-4 py-3 ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
+                          `block px-4 py-3 ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
                         }
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -271,7 +277,7 @@ const Header: React.FC = () => {
                       <NavLink
                         to="/products"
                         className={({ isActive }) =>
-                          `block px-4 py-3 ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
+                          `block px-4 py-3 ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
                         }
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -284,7 +290,7 @@ const Header: React.FC = () => {
                       <NavLink
                         to="/categories"
                         className={({ isActive }) =>
-                          `block px-4 py-3 ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
+                          `block px-4 py-3 ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
                         }
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
@@ -310,7 +316,7 @@ const Header: React.FC = () => {
                   <NavLink
                     to="/auth"
                     className={({ isActive }) =>
-                      `block px-4 py-3 ${isActive ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
+                      `block px-4 py-3 ${isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`
                     }
                     onClick={() => setIsMobileMenuOpen(false)}
                   >

@@ -147,7 +147,7 @@ const Cart = () => {
           <div className="mt-6">
             <Link
               to="/"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
             >
               Continuar comprando
             </Link>
@@ -211,7 +211,7 @@ const Cart = () => {
               </div>
               <button
                 onClick={() => setShowShippingForm(true)}
-                className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 underline"
+                className="text-xs sm:text-sm text-primary-600 hover:text-primary-800 underline"
               >
                 Modificar
               </button>
@@ -245,14 +245,14 @@ const Cart = () => {
           </div>
           
           {enableFreeShipping && totalPrice < freeShippingThreshold && (
-            <div className="text-xs sm:text-sm text-blue-600 bg-blue-50 border border-blue-200 p-3 rounded-lg">
+            <div className="text-xs sm:text-sm text-primary-600 bg-primary-50 border border-primary-200 p-3 rounded-lg">
               <div className="flex items-start sm:items-center gap-2">
                 <span className="text-base sm:text-lg">💡</span>
                 <div className="flex-1">
                   <span className="font-medium">
                     Agrega ${(freeShippingThreshold - totalPrice).toLocaleString()} más para envío gratis
                   </span>
-                  <p className="text-xs text-blue-500 mt-1">
+                  <p className="text-xs text-primary-500 mt-1">
                     Ahorra ${shippingCost.toLocaleString()} en envío
                   </p>
                 </div>
@@ -288,7 +288,7 @@ const Cart = () => {
         <button
           onClick={handleAdvanceOrder}
           disabled={isProcessing}
-          className="flex-1 px-4 py-3 sm:py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          className="flex-1 px-4 py-3 sm:py-2 text-sm sm:text-base bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >
           {isProcessing ? 'Procesando...' : 'Avanzar pedido'}
         </button>
