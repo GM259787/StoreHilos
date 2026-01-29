@@ -14,8 +14,15 @@ const PaymentPending = () => {
     const checkPaymentStatus = async () => {
       if (orderId) {
         try {
-          const status = await paymentApi.getPaymentStatus(parseInt(orderId));
-          setPaymentStatus(status);
+          // Intentar primero con PlaceToPay
+          try {
+            const status = await paymentApi.getPlaceToPayStatus(parseInt(orderId));
+            setPaymentStatus(status);
+          } catch {
+            // Si falla, intentar con el endpoint general
+            const status = await paymentApi.getPaymentStatus(parseInt(orderId));
+            setPaymentStatus(status);
+          }
         } catch (error) {
           console.error('Error verificando estado del pago:', error);
         }
@@ -55,11 +62,16 @@ const PaymentPending = () => {
         {paymentStatus && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-600">
-              <span className="font-medium">Número de pedido:</span> #{orderId}
+              <span className="font-medium">Número de pedido:</span> {paymentStatus.orderNumber || `#${orderId}`}
             </p>
             <p className="text-sm text-gray-600">
               <span className="font-medium">Estado:</span> {paymentStatus.isPaid ? 'Pagado' : 'Pendiente'}
             </p>
+            {paymentStatus.orderStatus && (
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Estado del pedido:</span> {paymentStatus.orderStatus}
+              </p>
+            )}
           </div>
         )}
 
@@ -71,7 +83,7 @@ const PaymentPending = () => {
             Ver Mis Pedidos
           </button>
           <button
-            onClick={() => navigate('/catalog')}
+            onClick={() => navigate('/')}
             className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
             Continuar Comprando

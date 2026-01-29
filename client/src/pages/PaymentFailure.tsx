@@ -37,7 +37,7 @@ const PaymentFailure = () => {
             Intentar Nuevamente
           </button>
           <button
-            onClick={() => navigate('/catalog')}
+            onClick={() => navigate('/')}
             className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
             Continuar Comprando

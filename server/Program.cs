@@ -85,6 +85,7 @@ builder.Services.AddAuthorization();
 // Registrar servicios
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpClient<MercadoPagoService>();
+builder.Services.AddHttpClient<PlaceToPayService>();
 
 var app = builder.Build();
 

@@ -52,6 +52,23 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
         
         // Redirigir a Mercado Pago
         window.location.href = paymentResponse.initPoint;
+      } else if (method === 'placetopay') {
+        // Crear sesión de pago con PlaceToPay
+        const paymentData = {
+          shippingAddress: orderData.shippingInfo.shippingAddress,
+          shippingCity: orderData.shippingInfo.shippingCity,
+          shippingPostalCode: orderData.shippingInfo.shippingPostalCode,
+          notes: orderData.shippingInfo.shippingInstructions || 'Pedido desde el carrito'
+        };
+        
+        const paymentResponse = await paymentApi.createPlaceToPaySession(paymentData);
+        
+        if (paymentResponse.success) {
+          // Redirigir a PlaceToPay
+          window.location.href = paymentResponse.processUrl;
+        } else {
+          showError('Error al procesar pago', paymentResponse.message || 'No se pudo crear la sesión de pago');
+        }
       } else if (method === 'transferencia') {
         // Crear pedido con método de transferencia
         const transferData = {
@@ -116,6 +133,40 @@ const PaymentOptions: React.FC<PaymentOptionsProps> = () => {
       {/* Opciones de pago */}
       <div className="space-y-4 mb-8">
         <h2 className="text-lg font-semibold text-gray-900">Métodos de pago disponibles</h2>
+        
+        {/* PlaceToPay - Pago con tarjeta de crédito/débito */}
+        <div 
+          className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+            selectedPayment === 'placetopay' 
+              ? 'border-blue-500 bg-blue-50' 
+              : 'border-gray-200 hover:border-gray-300'
+          }`}
+          onClick={() => setSelectedPayment('placetopay')}
+        >
+          <div className="flex items-center space-x-3">
+            <input
+              type="radio"
+              name="payment"
+              value="placetopay"
+              checked={selectedPayment === 'placetopay'}
+              onChange={() => setSelectedPayment('placetopay')}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+            />
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">PlaceToPay</h3>
+                  <p className="text-sm text-gray-500">Paga con tarjeta de crédito o débito</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         
         {/* Mercado Pago - Opción de pago online con múltiples métodos disponibles */}
         {/* 

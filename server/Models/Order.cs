@@ -52,6 +52,20 @@ public class Order
     [StringLength(500)]
     public string? Notes { get; set; }
     
+    // Información de pago
+    [StringLength(50)]
+    public string? PaymentMethod { get; set; } // "PlaceToPay", "MercadoPago", "Transferencia"
+    
+    [StringLength(100)]
+    public string? PaymentReference { get; set; } // Referencia externa del pago
+    
+    public int? PlaceToPayRequestId { get; set; } // ID de sesión de PlaceToPay
+    
+    [StringLength(50)]
+    public string? PaymentStatus { get; set; } // Estado del pago en el gateway
+    
+    public DateTime? PaymentDate { get; set; } // Fecha de pago efectivo
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
