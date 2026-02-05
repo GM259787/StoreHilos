@@ -174,10 +174,10 @@ public class OrdersController : ControllerBase
 
             // Calcular totales
             var subTotal = cart.CartItems.Sum(ci => (ci.Product?.Price ?? 0m) * ci.Quantity);
-            var taxAmount = 0m; // Por ahora sin impuestos
+            var taxAmount = 0m; // Sin impuestos
             
-            // Calcular costo de envío: gratis a partir de $2000, sino $150
-            var shippingAmount = subTotal >= 2000m ? 0m : 150m;
+            // Costo de envío fijo: 150 pesos uruguayos
+            var shippingAmount = 150m;
             
             var totalAmount = subTotal + taxAmount + shippingAmount;
 

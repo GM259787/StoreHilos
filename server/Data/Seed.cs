@@ -5,48 +5,79 @@ namespace Server.Data;
 
 public static class Seed
 {
-    public static async Task SeedDataAsync(AppDbContext context)
+    public static async Task SeedDataAsync(AppDbContext context, string environmentName)
     {
-        // En desarrollo, siempre cargar datos de ejemplo
-        // Limpiar datos existentes primero (en orden correcto para evitar restricciones de FK)
+        // SEGURIDAD: NUNCA ejecutar seed en producción
+        if (environmentName == "Production")
+        {
+            Console.WriteLine("⛔ SEED BLOQUEADO: No se permite ejecutar seed en producción.");
+            return;
+        }
+
+        Console.WriteLine($"🌱 Iniciando seed de datos en entorno: {environmentName}");
+        Console.WriteLine("⚠️  ADVERTENCIA: Esto solo debe ejecutarse en desarrollo local.");
         
-        // Limpiar datos existentes (Entity Framework maneja las restricciones de FK automáticamente)
-        context.CartItems.RemoveRange(context.CartItems);
-        context.ShoppingCarts.RemoveRange(context.ShoppingCarts);
-        context.OrderItems.RemoveRange(context.OrderItems);
-        context.Orders.RemoveRange(context.Orders);
-        context.Products.RemoveRange(context.Products);
-        context.Users.RemoveRange(context.Users);
-        context.Roles.RemoveRange(context.Roles);
-        context.Categories.RemoveRange(context.Categories);
-        await context.SaveChangesAsync();
+        // NUNCA eliminar datos existentes - solo agregar lo que falta
+        // Esto protege los datos de usuarios, carritos, órdenes, etc.
 
-        // Crear categorías de hilos por milimetraje
-        var categories = new List<Category>
+        // Crear categorías solo si no existen
+        var categoriesToAdd = new List<(string Name, string Slug)>
         {
-            new Category { Name = "Hilo 0.6mm - Fantasía", Slug = "hilo-06mm-fantasia" },
-            new Category { Name = "Hilo 0.8mm - Estándar", Slug = "hilo-08mm-estandar" },
-            new Category { Name = "Hilo 1.0mm - Grueso", Slug = "hilo-10mm-grueso" },
-            new Category { Name = "Hilo 1.2mm - Extra Grueso", Slug = "hilo-12mm-extra-grueso" },
-            new Category { Name = "Hilo 1.5mm - Industrial", Slug = "hilo-15mm-industrial" }
+            ("Hilo 0.6mm - Fantasía", "hilo-06mm-fantasia"),
+            ("Hilo 0.8mm - Estándar", "hilo-08mm-estandar"),
+            ("Hilo 1.0mm - Grueso", "hilo-10mm-grueso"),
+            ("Hilo 1.2mm - Extra Grueso", "hilo-12mm-extra-grueso"),
+            ("Hilo 1.5mm - Industrial", "hilo-15mm-industrial")
         };
 
-        await context.Categories.AddRangeAsync(categories);
+        var categories = new List<Category>();
+        foreach (var (name, slug) in categoriesToAdd)
+        {
+            var existingCategory = await context.Categories.FirstOrDefaultAsync(c => c.Slug == slug);
+            if (existingCategory == null)
+            {
+                var newCategory = new Category { Name = name, Slug = slug };
+                context.Categories.Add(newCategory);
+                categories.Add(newCategory);
+                Console.WriteLine($"  ✅ Categoría creada: {name}");
+            }
+            else
+            {
+                categories.Add(existingCategory);
+                Console.WriteLine($"  ⏭️  Categoría existente: {name}");
+            }
+        }
         await context.SaveChangesAsync();
 
-        // Crear roles
-        var roles = new List<Role>
+        // Crear roles solo si no existen
+        var rolesToAdd = new List<(string Name, string Description)>
         {
-            new Role { Name = "Customer", Description = "Cliente regular" },
-            new Role { Name = "Armador", Description = "Usuario que arma los pedidos" },
-            new Role { Name = "Cobrador", Description = "Usuario que maneja los pagos" }
+            ("Customer", "Cliente regular"),
+            ("Armador", "Usuario que arma los pedidos"),
+            ("Cobrador", "Usuario que maneja los pagos")
         };
 
-        await context.Roles.AddRangeAsync(roles);
+        var roles = new List<Role>();
+        foreach (var (name, description) in rolesToAdd)
+        {
+            var existingRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == name);
+            if (existingRole == null)
+            {
+                var newRole = new Role { Name = name, Description = description };
+                context.Roles.Add(newRole);
+                roles.Add(newRole);
+                Console.WriteLine($"  ✅ Rol creado: {name}");
+            }
+            else
+            {
+                roles.Add(existingRole);
+                Console.WriteLine($"  ⏭️  Rol existente: {name}");
+            }
+        }
         await context.SaveChangesAsync();
 
-        // Crear 10 productos de hilos con especificaciones realistas
-        var products = new List<Product>
+        // Crear productos solo si no existen (verificar por ImageUrl como identificador único)
+        var productsToAdd = new List<Product>
         {
             // Hilos Fantasía 0.6mm - Categoría 0
             new Product { 
@@ -139,10 +170,29 @@ public static class Seed
             }
         };
 
-        await context.Products.AddRangeAsync(products);
-        await context.SaveChangesAsync();
+        // Agregar productos solo si no existen (verificar por ImageUrl)
+        int productsAdded = 0;
+        foreach (var product in productsToAdd)
+        {
+            var existingProduct = await context.Products.FirstOrDefaultAsync(p => p.ImageUrl == product.ImageUrl);
+            if (existingProduct == null)
+            {
+                context.Products.Add(product);
+                productsAdded++;
+            }
+        }
+        
+        if (productsAdded > 0)
+        {
+            await context.SaveChangesAsync();
+            Console.WriteLine($"  ✅ {productsAdded} productos creados");
+        }
+        else
+        {
+            Console.WriteLine($"  ⏭️  Todos los productos ya existen");
+        }
 
-                // Crear usuarios de prueba
+        // Crear usuarios de prueba solo si no existen
         var testUsers = new List<User>
         {
             new User
@@ -180,13 +230,26 @@ public static class Seed
             }
         };
 
+        int usersAdded = 0;
         foreach (var user in testUsers)
         {
             if (!await context.Users.AnyAsync(u => u.Email == user.Email))
             {
                 context.Users.Add(user);
+                usersAdded++;
+                Console.WriteLine($"  ✅ Usuario creado: {user.Email}");
+            }
+            else
+            {
+                Console.WriteLine($"  ⏭️  Usuario existente: {user.Email}");
             }
         }
-        await context.SaveChangesAsync();
+        
+        if (usersAdded > 0)
+        {
+            await context.SaveChangesAsync();
+        }
+
+        Console.WriteLine("🌱 Seed completado exitosamente.");
     }
 }

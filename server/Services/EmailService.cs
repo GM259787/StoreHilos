@@ -5,6 +5,7 @@ namespace Server.Services;
 public interface IEmailService
 {
     Task SendPasswordResetEmailAsync(string email, string resetToken, string userName);
+    Task SendEmailVerificationAsync(string email, string verificationToken, string userName);
 }
 
 public class EmailService : IEmailService
@@ -22,7 +23,7 @@ public class EmailService : IEmailService
     {
         try
         {
-            var frontendUrl = _configuration["FrontendUrl"] ?? "https://storehilos.uy";
+            var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "https://storehilos.uy";
             var resetUrl = $"{frontendUrl}/reset-password?token={resetToken}";
             
             var subject = "Recuperación de contraseña - Store Hilos";
@@ -46,6 +47,34 @@ public class EmailService : IEmailService
         }
     }
 
+    public async Task SendEmailVerificationAsync(string email, string verificationToken, string userName)
+    {
+        try
+        {
+            var frontendUrl = _configuration["FrontendUrl"]?.TrimEnd('/') ?? "https://storehilos.uy";
+            var verificationUrl = $"{frontendUrl}/verify-email?token={verificationToken}";
+            
+            var subject = "Verificación de email - Store Hilos";
+            var body = BuildEmailVerificationBody(userName, verificationUrl);
+            
+            // Por ahora, solo logueamos el email (en producción se enviaría realmente)
+            _logger.LogInformation($"Email Verification for {email}:");
+            _logger.LogInformation($"Subject: {subject}");
+            _logger.LogInformation($"Body: {body}");
+            _logger.LogInformation($"Verification URL: {verificationUrl}");
+            
+            // TODO: Implementar envío real de email usando SendGrid, SMTP, etc.
+            // await SendEmailAsync(email, subject, body);
+            
+            await Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending email verification to {Email}", email);
+            throw;
+        }
+    }
+
     private string BuildPasswordResetEmailBody(string userName, string resetUrl)
     {
         var body = new StringBuilder();
@@ -55,6 +84,21 @@ public class EmailService : IEmailService
         body.AppendLine($"<p><a href=\"{resetUrl}\" style=\"background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">Restablecer Contraseña</a></p>");
         body.AppendLine("<p>Si no solicitaste este cambio, puedes ignorar este email.</p>");
         body.AppendLine("<p>Este enlace expirará en 1 hora por seguridad.</p>");
+        body.AppendLine("<br>");
+        body.AppendLine("<p>Saludos,<br>Equipo de Store Hilos</p>");
+        
+        return body.ToString();
+    }
+
+    private string BuildEmailVerificationBody(string userName, string verificationUrl)
+    {
+        var body = new StringBuilder();
+        body.AppendLine($"<h2>Bienvenido/a {userName},</h2>");
+        body.AppendLine("<p>¡Gracias por registrarte en Store Hilos!</p>");
+        body.AppendLine("<p>Para completar tu registro y activar tu cuenta, por favor verifica tu dirección de email haciendo clic en el siguiente enlace:</p>");
+        body.AppendLine($"<p><a href=\"{verificationUrl}\" style=\"background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">Verificar Email</a></p>");
+        body.AppendLine("<p>Si no creaste esta cuenta, puedes ignorar este email.</p>");
+        body.AppendLine("<p>Este enlace expirará en 24 horas por seguridad.</p>");
         body.AppendLine("<br>");
         body.AppendLine("<p>Saludos,<br>Equipo de Store Hilos</p>");
         

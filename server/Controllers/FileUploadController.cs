@@ -104,9 +104,8 @@ public class FileUploadController : ControllerBase
                 return StatusCode(500, new { message = $"No se pudo guardar el archivo en: {filePath}" });
             }
 
-            // Retornar la URL relativa del archivo
-            //var fileUrl = $"/uploads/products/{fileName}";
-            var fileUrl = filePath;
+            // Retornar la URL relativa del archivo (importante para que funcione en producción)
+            var fileUrl = $"/uploads/products/{fileName}";
             return Ok(new { 
                 message = "Archivo subido exitosamente",
                 fileUrl = fileUrl,

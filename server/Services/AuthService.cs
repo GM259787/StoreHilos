@@ -23,6 +23,7 @@ public interface IAuthService
     Task<UserDto> UpdateShippingInfoAsync(int userId, UpdateShippingInfoDto shippingInfoDto);
     Task<bool> ForgotPasswordAsync(string email);
     Task<bool> ResetPasswordAsync(string token, string newPassword);
+    Task<bool> VerifyEmailAsync(string token);
 }
 
 public class AuthService : IAuthService
@@ -67,6 +68,9 @@ public class AuthService : IAuthService
             throw new InvalidOperationException("No se encontró el rol Customer");
         }
 
+        // Generar token de verificación
+        var verificationToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
         var user = new User
         {
             Email = registerDto.Email,
@@ -74,13 +78,30 @@ public class AuthService : IAuthService
             FirstName = registerDto.FirstName,
             LastName = registerDto.LastName,
             Phone = registerDto.Phone,
-            EmailConfirmed = false, // Requeriría confirmación por email
-            IsActive = true,
+            EmailConfirmed = false,
+            EmailVerificationToken = verificationToken,
+            EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24), // Token válido por 24 horas
+            IsActive = false, // No activar cuenta hasta verificar email
             RoleId = customerRole.Id
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+
+        // Enviar email de verificación
+        try
+        {
+            await _emailService.SendEmailVerificationAsync(
+                user.Email,
+                verificationToken,
+                $"{user.FirstName} {user.LastName}"
+            );
+        }
+        catch (Exception ex)
+        {
+            // Log error pero no fallar el registro
+            Console.WriteLine($"Error enviando email de verificación: {ex.Message}");
+        }
 
         // Recargar el usuario con el rol
         await _context.Entry(user).Reference(u => u.Role).LoadAsync();
@@ -469,6 +490,35 @@ public class AuthService : IAuthService
             // Marcar token como usado
             resetToken.IsUsed = true;
             resetToken.UsedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> VerifyEmailAsync(string token)
+    {
+        try
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.EmailVerificationToken == token 
+                    && u.EmailVerificationTokenExpiry > DateTime.UtcNow);
+
+            if (user == null)
+            {
+                return false; // Token inválido o expirado
+            }
+
+            // Verificar y activar la cuenta
+            user.EmailConfirmed = true;
+            user.IsActive = true;
+            user.EmailVerificationToken = null;
+            user.EmailVerificationTokenExpiry = null;
+            user.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return true;

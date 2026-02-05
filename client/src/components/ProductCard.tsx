@@ -5,6 +5,7 @@ import { cartApi } from '../api/cart';
 import { Product } from '../types/catalog';
 import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
+import { getImageUrl } from '../utils/imageUrl';
 import { useAuthStore } from '../store/auth';
 
 
@@ -32,21 +33,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }, [items, product.id]);
 
   // URL base del backend para las imágenes
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';
-
-  // Construir la URL completa de la imagen
-  const getImageUrl = (imageUrl: string | null | undefined) => {
-    if (!imageUrl) {
-      return 'https://picsum.photos/seed/placeholder/600/600';
-    }
-    // Si la URL ya es completa, usarla tal como está
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return encodeURI(imageUrl);
-    }
-    // Si es relativa, concatenarla con la URL base del backend
-    return encodeURI(`${API_BASE_URL}${imageUrl}`);
-  };
-
   // Calcular precio según cantidad y descuentos
   const getCurrentPrice = () => {
     if (product.isDiscountActive &&
@@ -69,15 +55,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const handleAddToCart = async () => {
     const currentPrice = getCurrentPrice();
     const discountApplied = quantity >= (product.minQuantityForDiscount || 0);
-
-    console.log('Agregando producto al carrito:', {
-      id: product.id,
-      name: product.name,
-      price: currentPrice,
-      quantity: quantity,
-      availableStock: product.availableStock,
-      discountApplied: discountApplied
-    });
 
     // Si el producto ya está en el carrito, actualizar la cantidad
     if (cartItem) {

@@ -58,7 +58,16 @@ const ProductManagement: React.FC = () => {
   const [updatingImage, setUpdatingImage] = useState(false);
 
   // URL base del backend para las imágenes
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';
+  const [API_BASE_URL, setApiBaseUrl] = useState<string>('http://localhost:5175');
+
+  useEffect(() => {
+    const loadApiUrl = async () => {
+      const { getApiBaseUrl } = await import('../utils/apiConfig');
+      const url = await getApiBaseUrl();
+      setApiBaseUrl(url);
+    };
+    loadApiUrl();
+  }, []);
 
   // Construir la URL completa de la imagen
   const getImageUrl = (imageUrl: string | null | undefined) => {

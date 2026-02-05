@@ -85,7 +85,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Order>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.OrderNumber).IsRequired().HasMaxLength(20);
+            entity.Property(e => e.OrderNumber).IsRequired().HasMaxLength(60);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
             entity.Property(e => e.SubTotal).IsRequired().HasPrecision(10, 2);
             entity.Property(e => e.TaxAmount).IsRequired().HasPrecision(10, 2);

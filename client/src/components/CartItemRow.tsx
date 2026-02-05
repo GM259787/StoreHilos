@@ -3,6 +3,7 @@ import { useCartStore } from '../store/cart';
 import { useAuthStore } from '../store/auth';
 import { cartApi } from '../api/cart';
 import { formatPrice } from '../utils/currency';
+import { getImageUrl } from '../utils/imageUrl';
 
 
 interface CartItemRowProps {
@@ -13,22 +14,6 @@ const CartItemRow = ({ item }: CartItemRowProps) => {
   const updateQuantity = useCartStore(state => state.updateQuantity);
   const removeItem = useCartStore(state => state.removeItem);
   const { isAuthenticated } = useAuthStore();
-
-  // URL base del backend para las imágenes
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';
-
-  // Construir la URL completa de la imagen
-  const getImageUrl = (imageUrl: string | null | undefined) => {
-    if (!imageUrl) {
-      return 'https://picsum.photos/seed/placeholder/100/100';
-    }
-    // Si la URL ya es completa, usarla tal como está
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return encodeURI(imageUrl);
-    }
-    // Si es relativa, concatenarla con la URL base del backend
-    return encodeURI(`${API_BASE_URL}${imageUrl}`);
-  };
 
   const handleQuantityChange = async (newQuantity: number) => {
     if (newQuantity === 0) {

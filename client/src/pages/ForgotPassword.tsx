@@ -14,7 +14,9 @@ const ForgotPassword: React.FC = () => {
     setMessage('');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password`, {
+      const { buildApiUrl } = await import('../utils/apiConfig');
+      const url = await buildApiUrl('/api/auth/forgot-password');
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

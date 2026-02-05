@@ -46,7 +46,8 @@ const GoogleAuthCallback = () => {
     const exchangeCodeForToken = async (code: string) => {
       try {
         // Enviar código al backend para procesar
-        const apiBase = import.meta.env.VITE_API_URL as string;
+        const { getApiBaseUrl } = await import('../utils/apiConfig');
+        const apiBase = await getApiBaseUrl();
         const callbackUrl = `${apiBase}/api/auth/google-callback`;
         const response = await fetch(callbackUrl, {
           method: 'POST',

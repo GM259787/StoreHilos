@@ -110,7 +110,20 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Servir archivos estáticos (imágenes, CSS, JS, etc.)
-app.UseStaticFiles();
+app.UseStaticFiles(); // Sirve archivos de wwwroot
+
+// Configurar carpeta uploads para servir imágenes de productos
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 
 // Mapear controladores
 app.MapControllers();
@@ -171,27 +184,36 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Verificar si ya hay datos en la base de datos
-    try
+    // SEGURIDAD: Solo ejecutar seed en entorno Development
+    if (app.Environment.IsDevelopment())
     {
-        var hasCategories = await context.Categories.AnyAsync();
-        var hasRoles = await context.Roles.AnyAsync();
+        // Verificar si ya hay datos en la base de datos
+        try
+        {
+            var hasCategories = await context.Categories.AnyAsync();
+            var hasRoles = await context.Roles.AnyAsync();
 
-        if (!hasCategories || !hasRoles)
-        {
-            Console.WriteLine("Inicializando datos de la base de datos...");
-            await Seed.SeedDataAsync(context);
-            Console.WriteLine("Datos inicializados exitosamente.");
+            if (!hasCategories || !hasRoles)
+            {
+                Console.WriteLine("⚠️  Inicializando datos de prueba (solo en Development)...");
+                await Seed.SeedDataAsync(context, app.Environment.EnvironmentName);
+                Console.WriteLine("✅ Datos de prueba inicializados.");
+            }
+            else
+            {
+                Console.WriteLine("✓ Base de datos ya contiene datos, omitiendo seed.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Base de datos ya contiene datos, omitiendo inicialización.");
+            Console.WriteLine($"⚠️  Error verificando datos: {ex.Message}");
+            Console.WriteLine("Continuando sin inicializar datos...");
         }
     }
-    catch (Exception ex)
+    else
     {
-        Console.WriteLine($"⚠️  Error verificando datos: {ex.Message}");
-        Console.WriteLine("Continuando sin inicializar datos...");
+        Console.WriteLine($"⛔ Seed deshabilitado en entorno: {app.Environment.EnvironmentName}");
+        Console.WriteLine("✓ Solo se permite seed en Development.");
     }
 }
 

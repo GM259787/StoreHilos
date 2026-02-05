@@ -4,6 +4,7 @@ import { catalogApi } from '../api/catalog';
 import { Product } from '../types/catalog';
 import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
+import { getImageUrl } from '../utils/imageUrl';
 import { useCartSync } from '../hooks/useCartSync';
 
 const ProductDetail: React.FC = () => {
@@ -51,20 +52,6 @@ const ProductDetail: React.FC = () => {
        };
        fetchProduct();
     }, [id]);
-
-    // URL base del backend para las imágenes
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5175';
-
-    // Construir la URL completa de la imagen
-    const getImageUrl = (imageUrl: string | null | undefined) => {
-        if (!imageUrl) {
-            return 'https://picsum.photos/seed/placeholder/600/600';
-        }
-        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-            return encodeURI(imageUrl);
-        }
-        return encodeURI(`${API_BASE_URL}${imageUrl}`);
-    };
 
     // Calcular precio según cantidad y descuentos
     const getCurrentPrice = () => {

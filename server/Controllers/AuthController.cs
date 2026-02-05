@@ -157,4 +157,27 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPost("verify-email")]
+    public async Task<ActionResult> VerifyEmail([FromQuery] string token)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest(new { message = "Token requerido" });
+            }
+
+            var result = await _authService.VerifyEmailAsync(token);
+            if (result)
+            {
+                return Ok(new { message = "Email verificado exitosamente. Tu cuenta ha sido activada." });
+            }
+            return BadRequest(new { message = "Token inválido o expirado" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

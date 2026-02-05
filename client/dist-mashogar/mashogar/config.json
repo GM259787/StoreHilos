@@ -1,6 +1,7 @@
 {
   "siteId": "mashogar",
   "companyName": "Más Hogar",
+  "pageTitle": "Más Hogar - Tienda Online",
   "description": "En MasHogar queremos que comprar cosas para tu casa sea fácil. Somos una tienda online de Uruguay con productos innovadores.",
   "apiUrl": "http://localhost:5175",
   "logo": "/src/images/mashogar_logo.svg",

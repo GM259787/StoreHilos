@@ -11,7 +11,7 @@ public class Order
     public int UserId { get; set; }
     
     [Required]
-    [StringLength(20)]
+    [StringLength(60)]
     public string OrderNumber { get; set; } = string.Empty;
     
     [Required]

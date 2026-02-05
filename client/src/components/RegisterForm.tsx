@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/auth';
-import { showError } from '../utils/alerts';
+import { showError, showSuccess } from '../utils/alerts';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -15,6 +15,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     lastName: '',
     phone: ''
   });
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const { register, isLoading, error, clearError } = useAuthStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,10 +42,46 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
         formData.lastName,
         formData.phone || undefined
       );
+      
+      // Mostrar mensaje de éxito
+      setRegistrationSuccess(true);
+      showSuccess(
+        '¡Registro exitoso!', 
+        'Te hemos enviado un email de verificación. Por favor revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.'
+      );
     } catch (error) {
       // Error ya manejado en el store
     }
   };
+
+  if (registrationSuccess) {
+    return (
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <div className="text-center">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+            <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            ¡Revisa tu email!
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Te hemos enviado un enlace de verificación a <strong>{formData.email}</strong>
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            Por favor revisa tu bandeja de entrada (y la carpeta de spam) y haz clic en el enlace para activar tu cuenta.
+          </p>
+          <button
+            onClick={onSwitchToLogin}
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
+          >
+            Ir al Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">

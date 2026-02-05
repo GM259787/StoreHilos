@@ -54,6 +54,11 @@ public class User
     public bool IsActive { get; set; } = true;
     public bool EmailConfirmed { get; set; } = false;
     
+    [StringLength(100)]
+    public string? EmailVerificationToken { get; set; }
+    
+    public DateTime? EmailVerificationTokenExpiry { get; set; }
+    
     // Role
     public int RoleId { get; set; } = 1; // Default: Customer
     

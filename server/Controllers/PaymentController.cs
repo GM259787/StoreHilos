@@ -54,8 +54,8 @@ public class PaymentController : ControllerBase
             // Crear el pedido temporal
             var orderNumber = GenerateOrderNumber();
             var subTotal = cart.CartItems.Sum(ci => ci.Product.Price * ci.Quantity);
-            var taxAmount = subTotal * 0.22m; // 22% IVA
-            var shippingAmount = 5.99m;
+            var taxAmount = 0m; // Sin IVA
+            var shippingAmount = 150m; // Costo fijo de envío: 150 pesos uruguayos
             var totalAmount = subTotal + taxAmount + shippingAmount;
 
             var order = new Models.Order
@@ -249,9 +249,8 @@ public class PaymentController : ControllerBase
             // Crear el pedido
             var orderNumber = GenerateOrderNumber();
             var subTotal = cart.CartItems.Sum(ci => ci.Product.Price * ci.Quantity);
-            var taxAmount = subTotal * 0.22m; // 22% IVA
-            var shippingAmount = 5.99m;
-            var totalAmount = subTotal + taxAmount + shippingAmount;
+            var shippingAmount = 150m; // Costo fijo de envío: 150 pesos uruguayos
+            var totalAmount = subTotal + shippingAmount;
 
             var order = new Models.Order
             {
@@ -260,7 +259,6 @@ public class PaymentController : ControllerBase
                 Status = "Pending",
                 IsPaid = false,
                 SubTotal = subTotal,
-                TaxAmount = taxAmount,
                 ShippingAmount = shippingAmount,
                 TotalAmount = totalAmount,
                 ShippingAddress = dto.ShippingAddress,
@@ -299,9 +297,9 @@ public class PaymentController : ControllerBase
                 BuyerMobile = user.Phone ?? "",
                 Reference = order.OrderNumber,
                 Description = $"Pedido {order.OrderNumber} - {cart.CartItems.Count} productos",
-                Currency = "USD",
+                Currency = "UYU",
                 Total = totalAmount,
-                ReturnUrl = $"{_configuration["FrontendUrl"]}/payment/return?orderId={order.Id}",
+                ReturnUrl = $"{_configuration["FrontendUrl"]?.TrimEnd('/')}/payment/return?orderId={order.Id}",
                 IpAddress = ipAddress,
                 UserAgent = userAgent
             };

@@ -10,10 +10,12 @@ const getApiBaseUrl = async () => {
   try {
     const config = await loadConfig();
     console.log('Config loaded, API URL:', config.apiUrl);
-    return config.apiUrl;
+    // Si apiUrl está vacío o es undefined, usar el mismo origen (para cuando frontend y backend están en el mismo dominio)
+    return config.apiUrl || window.location.origin;
   } catch (error) {
     console.error('Error loading config, using fallback:', error);
-    return import.meta.env.VITE_API_URL || 'http://localhost:5175';
+    // Fallback a localhost si falla la carga del config
+    return 'http://localhost:5175';
   }
 };
 
@@ -30,8 +32,12 @@ const initializeApi = async (): Promise<AxiosInstance> => {
     const baseUrl = await getApiBaseUrl();
     console.log('Initializing API with base URL:', baseUrl);
     
+    // Normalizar baseURL: remover /api si ya existe al final para evitar duplicaciones
+    const normalizedBaseUrl = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+    console.log('Normalized base URL:', normalizedBaseUrl);
+    
     apiInstance = axios.create({
-      baseURL: `${baseUrl}/api`,
+      baseURL: normalizedBaseUrl,
       headers: {
         'Content-Type': 'application/json',
       },

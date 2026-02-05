@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5176",
-    "dev:storehilos": "cross-env VITE_SITE_ID=storehilos vite --port 5176",
-    "dev:mashogar": "cross-env VITE_SITE_ID=mashogar vite --port 5176",
+    "dev:storehilos": "cross-env VITE_SITE_ID=storehilos vite --port 5176 --mode storehilos",
+    "dev:mashogar": "cross-env VITE_SITE_ID=mashogar vite --port 5176 --mode mashogar",
     "build": "tsc && vite build",
     "build:storehilos": "cross-env VITE_SITE_ID=storehilos tsc && vite build --mode storehilos",
     "build:mashogar": "cross-env VITE_SITE_ID=mashogar tsc && vite build --mode mashogar",

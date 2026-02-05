@@ -6,6 +6,7 @@ export type SiteId = 'storehilos' | 'mashogar';
 export interface SiteConfig {
   siteId: SiteId;
   companyName: string;
+  pageTitle: string;
   description: string;
   apiUrl: string;
   logo: string;
@@ -95,6 +96,7 @@ export const loadConfig = async (forceReload = false): Promise<ThemeConfig> => {
       cachedConfig = {
         siteId: 'mashogar',
         companyName: 'Más Hogar',
+        pageTitle: 'Más Hogar - Tienda Online',
         description: 'En MasHogar queremos que comprar cosas para tu casa sea fácil.',
         apiUrl: 'http://localhost:5175',
         logo: '/src/images/logo_full_fondo_blanco.svg',
