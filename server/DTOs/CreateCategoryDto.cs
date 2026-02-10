@@ -12,4 +12,7 @@ public class CreateCategoryDto
     [StringLength(100, ErrorMessage = "El slug no puede exceder los 100 caracteres")]
     [RegularExpression(@"^[a-z0-9-]+$", ErrorMessage = "El slug solo puede contener letras minúsculas, números y guiones")]
     public string Slug { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "La URL de la imagen no puede exceder los 500 caracteres")]
+    public string? ImageUrl { get; set; }
 }

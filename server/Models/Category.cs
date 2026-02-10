@@ -13,7 +13,10 @@ public class Category
     [Required]
     [StringLength(100)]
     public string Slug { get; set; } = string.Empty;
-    
+
+    [StringLength(500)]
+    public string? ImageUrl { get; set; }
+
     // Navigation property
     public ICollection<Product> Products { get; set; } = new List<Product>();
 }

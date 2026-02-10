@@ -43,7 +43,8 @@ public class CategoriesController : ControllerBase
             {
                 Id = c.Id,
                 Name = c.Name,
-                Slug = c.Slug
+                Slug = c.Slug,
+                ImageUrl = c.ImageUrl
             })
             .ToListAsync();
 
@@ -70,7 +71,8 @@ public class CategoriesController : ControllerBase
         {
             Id = category.Id,
             Name = category.Name,
-            Slug = category.Slug
+            Slug = category.Slug,
+            ImageUrl = category.ImageUrl
         };
 
         return Ok(categoryDto);
@@ -99,7 +101,8 @@ public class CategoriesController : ControllerBase
             var category = new Category
             {
                 Name = createCategoryDto.Name.Trim(),
-                Slug = createCategoryDto.Slug.Trim().ToLower()
+                Slug = createCategoryDto.Slug.Trim().ToLower(),
+                ImageUrl = createCategoryDto.ImageUrl
             };
 
             Console.WriteLine($"Creando nueva categoría: {category.Name}, {category.Slug}");
@@ -116,7 +119,8 @@ public class CategoriesController : ControllerBase
             {
                 Id = category.Id,
                 Name = category.Name,
-                Slug = category.Slug
+                Slug = category.Slug,
+                ImageUrl = category.ImageUrl
             };
 
             return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, categoryDto);
@@ -155,6 +159,7 @@ public class CategoriesController : ControllerBase
 
             category.Name = updateCategoryDto.Name.Trim();
             category.Slug = updateCategoryDto.Slug.Trim().ToLower();
+            category.ImageUrl = updateCategoryDto.ImageUrl;
 
             await _context.SaveChangesAsync();
 
@@ -165,7 +170,8 @@ public class CategoriesController : ControllerBase
             {
                 Id = category.Id,
                 Name = category.Name,
-                Slug = category.Slug
+                Slug = category.Slug,
+                ImageUrl = category.ImageUrl
             };
 
             return Ok(categoryDto);
