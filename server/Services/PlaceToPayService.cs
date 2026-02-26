@@ -58,7 +58,7 @@ public class PlaceToPayService
         try
         {
             var auth = GenerateAuth();
-            
+
             var sessionData = new
             {
                 auth = new
@@ -81,11 +81,32 @@ public class PlaceToPayService
                     amount = new
                     {
                         currency = request.Currency,
-                        total = request.Total
+                        total = request.Total,
+                        taxes = new[]
+                        {
+                            new
+                            {
+                                kind = "valueAddedTax",
+                                amount = request.TaxAmount
+                            }
+                        }
+                    }
+                },
+                modifiers = new[]
+                {
+                    new
+                    {
+                        type = "FEDERAL_GOVERNMENT",
+                        code = 19210,
+                        additional = new
+                        {
+                            invoice = request.Invoice
+                        }
                     }
                 },
                 expiration = DateTime.UtcNow.AddHours(24).ToString("yyyy-MM-ddTHH:mm:sszzz"),
                 returnUrl = request.ReturnUrl,
+                notificationUrl = request.NotificationUrl,
                 ipAddress = request.IpAddress,
                 userAgent = request.UserAgent
             };
@@ -198,6 +219,41 @@ public class PlaceToPayService
             throw;
         }
     }
+    /// <summary>
+    /// Valida la firma de una notificación webhook de PlaceToPay
+    /// Fórmula: SHA-256(requestId + status + date + secretKey)
+    /// </summary>
+    public bool ValidateWebhookSignature(int requestId, string status, string date, string receivedSignature)
+    {
+        // La firma viene con prefijo "sha256:" o sin prefijo (SHA-1 legacy)
+        var cleanSignature = receivedSignature;
+        var useSha256 = true;
+
+        if (receivedSignature.StartsWith("sha256:"))
+        {
+            cleanSignature = receivedSignature["sha256:".Length..];
+        }
+        else
+        {
+            useSha256 = false;
+        }
+
+        var raw = $"{requestId}{status}{date}{_secretKey}";
+
+        string computedSignature;
+        if (useSha256)
+        {
+            var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
+            computedSignature = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+        else
+        {
+            var hashBytes = System.Security.Cryptography.SHA1.HashData(Encoding.UTF8.GetBytes(raw));
+            computedSignature = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+
+        return string.Equals(computedSignature, cleanSignature, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 // ==================== MODELOS ====================
@@ -222,6 +278,9 @@ public class CreateSessionRequest
     public string ReturnUrl { get; set; } = string.Empty;
     public string IpAddress { get; set; } = string.Empty;
     public string UserAgent { get; set; } = string.Empty;
+    public decimal TaxAmount { get; set; }
+    public string Invoice { get; set; } = string.Empty;
+    public string NotificationUrl { get; set; } = string.Empty;
 }
 
 public class PlaceToPaySessionResponse

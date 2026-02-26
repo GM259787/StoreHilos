@@ -252,6 +252,10 @@ public class PaymentController : ControllerBase
             var shippingAmount = 150m; // Costo fijo de envío: 150 pesos uruguayos
             var totalAmount = subTotal + shippingAmount;
 
+            // Desglose de IVA: los precios en la base ya incluyen IVA (22%)
+            // IVA solo aplica sobre productos, no sobre envío
+            var ivaAmount = Math.Round(subTotal - (subTotal / 1.22m), 2);
+
             var order = new Models.Order
             {
                 UserId = userId,
@@ -299,9 +303,12 @@ public class PaymentController : ControllerBase
                 Description = $"Pedido {order.OrderNumber} - {cart.CartItems.Count} productos",
                 Currency = "UYU",
                 Total = totalAmount,
+                TaxAmount = ivaAmount,
                 ReturnUrl = $"{_configuration["FrontendUrl"]?.TrimEnd('/')}/payment/return?orderId={order.Id}",
+                NotificationUrl = $"{_configuration["BackendUrl"]?.TrimEnd('/')}/api/payment/placetopay/webhook",
                 IpAddress = ipAddress,
-                UserAgent = userAgent
+                UserAgent = userAgent,
+                Invoice = order.OrderNumber
             };
 
             var session = await _placeToPayService.CreateSessionAsync(sessionRequest);
@@ -441,8 +448,24 @@ public class PaymentController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Webhook recibido de PlaceToPay. RequestId: {RequestId}", 
-                webhookRequest.RequestId);
+            _logger.LogInformation("Webhook recibido de PlaceToPay. RequestId: {RequestId}, Status: {Status}",
+                webhookRequest.RequestId, webhookRequest.Status?.Status);
+
+            // Validar firma para evitar webhooks falsos
+            if (webhookRequest.Status != null && !string.IsNullOrEmpty(webhookRequest.Signature))
+            {
+                var isValid = _placeToPayService.ValidateWebhookSignature(
+                    webhookRequest.RequestId,
+                    webhookRequest.Status.Status,
+                    webhookRequest.Status.Date,
+                    webhookRequest.Signature);
+
+                if (!isValid)
+                {
+                    _logger.LogWarning("Firma inválida en webhook de PlaceToPay. RequestId: {RequestId}", webhookRequest.RequestId);
+                    return Unauthorized(new { message = "Firma inválida" });
+                }
+            }
 
             // Buscar el pedido con este requestId
             var order = await _context.Orders
@@ -460,13 +483,13 @@ public class PaymentController : ControllerBase
             if (session.Status != null)
             {
                 order.PaymentStatus = session.Status.Status;
-                
+
                 if (session.Status.Status == "APPROVED" && !order.IsPaid)
                 {
                     order.IsPaid = true;
                     order.PaymentDate = DateTime.UtcNow;
                     order.Status = "Confirmed";
-                    
+
                     if (session.Payment != null && session.Payment.Count > 0)
                     {
                         var payment = session.Payment.FirstOrDefault(p => p.Status?.Status == "APPROVED");
@@ -475,7 +498,19 @@ public class PaymentController : ControllerBase
                             order.PaymentReference = payment.Authorization;
                         }
                     }
-                    
+
+                    // Limpiar el carrito del usuario cuando el pago es confirmado
+                    var cart = await _context.ShoppingCarts
+                        .Include(c => c.CartItems)
+                        .FirstOrDefaultAsync(c => c.UserId == order.UserId);
+
+                    if (cart != null)
+                    {
+                        _context.CartItems.RemoveRange(cart.CartItems);
+                        _context.ShoppingCarts.Remove(cart);
+                        _logger.LogInformation("Carrito limpiado para usuario {UserId} vía webhook", order.UserId);
+                    }
+
                     _logger.LogInformation("Pago aprobado vía webhook para pedido {OrderId}", order.Id);
                 }
                 else if (session.Status.Status == "REJECTED")
@@ -572,5 +607,15 @@ public class PlaceToPayStatusResponse
 public class PlaceToPayWebhookDto
 {
     public int RequestId { get; set; }
+    public PlaceToPayWebhookStatus? Status { get; set; }
+    public string Reference { get; set; } = string.Empty;
+    public string Signature { get; set; } = string.Empty;
+}
+
+public class PlaceToPayWebhookStatus
+{
     public string Status { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string Date { get; set; } = string.Empty;
 }
