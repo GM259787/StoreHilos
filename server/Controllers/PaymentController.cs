@@ -296,7 +296,8 @@ public class PaymentController : ControllerBase
             // Crear la sesión en PlaceToPay
             var sessionRequest = new CreateSessionRequest
             {
-                BuyerName = $"{user.FirstName} {user.LastName}",
+                BuyerName = user.FirstName,
+                BuyerSurname = user.LastName,
                 BuyerEmail = user.Email,
                 BuyerMobile = user.Phone ?? "",
                 Reference = order.OrderNumber,
@@ -308,7 +309,7 @@ public class PaymentController : ControllerBase
                 NotificationUrl = $"{_configuration["BackendUrl"]?.TrimEnd('/')}/api/payment/placetopay/webhook",
                 IpAddress = ipAddress,
                 UserAgent = userAgent,
-                Invoice = order.OrderNumber
+                Invoice = order.Id.ToString()
             };
 
             var session = await _placeToPayService.CreateSessionAsync(sessionRequest);

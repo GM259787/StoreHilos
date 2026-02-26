@@ -71,6 +71,7 @@ public class PlaceToPayService
                 buyer = new
                 {
                     name = request.BuyerName,
+                    surname = request.BuyerSurname,
                     email = request.BuyerEmail,
                     mobile = request.BuyerMobile
                 },
@@ -87,24 +88,25 @@ public class PlaceToPayService
                             new
                             {
                                 kind = "valueAddedTax",
-                                amount = request.TaxAmount
+                                amount = request.TaxAmount,
+                                @base = Math.Round(request.Total - request.TaxAmount, 2)
+                            }
+                        }
+                    },
+                    modifiers = new[]
+                    {
+                        new
+                        {
+                            type = "FEDERAL_GOVERNMENT",
+                            code = 19210,
+                            additional = new
+                            {
+                                invoice = request.Invoice
                             }
                         }
                     }
                 },
-                modifiers = new[]
-                {
-                    new
-                    {
-                        type = "FEDERAL_GOVERNMENT",
-                        code = 19210,
-                        additional = new
-                        {
-                            invoice = request.Invoice
-                        }
-                    }
-                },
-                expiration = DateTime.UtcNow.AddHours(24).ToString("yyyy-MM-ddTHH:mm:sszzz"),
+                expiration = DateTime.UtcNow.AddMinutes(15).ToString("yyyy-MM-ddTHH:mm:sszzz"),
                 returnUrl = request.ReturnUrl,
                 notificationUrl = request.NotificationUrl,
                 ipAddress = request.IpAddress,
@@ -113,12 +115,14 @@ public class PlaceToPayService
 
             var json = JsonSerializer.Serialize(sessionData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            _logger.LogInformation("Creando sesión PlaceToPay para referencia: {Reference}", request.Reference);
+
+            _logger.LogInformation("Creando sesión PlaceToPay para referencia: {Reference}. Payload: {Payload}", request.Reference, json);
             
             var response = await _httpClient.PostAsync($"{_baseUrl}/api/session", content);
             var responseContent = await response.Content.ReadAsStringAsync();
             
+            _logger.LogInformation("Respuesta PlaceToPay: {StatusCode} - {Content}", response.StatusCode, responseContent);
+
             if (response.IsSuccessStatusCode)
             {
                 var options = new JsonSerializerOptions
@@ -126,19 +130,19 @@ public class PlaceToPayService
                     PropertyNameCaseInsensitive = true
                 };
                 var result = JsonSerializer.Deserialize<PlaceToPaySessionResponse>(responseContent, options);
-                
+
                 if (result != null)
                 {
-                    _logger.LogInformation("Sesión creada exitosamente. RequestId: {RequestId}, ProcessUrl: {ProcessUrl}", 
+                    _logger.LogInformation("Sesión creada exitosamente. RequestId: {RequestId}, ProcessUrl: {ProcessUrl}",
                         result.RequestId, result.ProcessUrl);
                     return result;
                 }
-                
+
                 throw new Exception("Error al deserializar respuesta de PlaceToPay");
             }
             else
             {
-                _logger.LogError("Error creando sesión PlaceToPay: {StatusCode} - {Content}", 
+                _logger.LogError("Error creando sesión PlaceToPay: {StatusCode} - {Content}",
                     response.StatusCode, responseContent);
                 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -269,6 +273,7 @@ public class PlaceToPayAuth
 public class CreateSessionRequest
 {
     public string BuyerName { get; set; } = string.Empty;
+    public string BuyerSurname { get; set; } = string.Empty;
     public string BuyerEmail { get; set; } = string.Empty;
     public string BuyerMobile { get; set; } = string.Empty;
     public string Reference { get; set; } = string.Empty;
