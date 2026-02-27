@@ -23,7 +23,7 @@ public class PlaceToPayService
     /// </summary>
     private (string baseUrl, string login, string secretKey) GetSiteCredentials(string siteId)
     {
-        var baseUrl = _configuration[$"PlaceToPay:{siteId}:BaseUrl"] ?? "https://checkout-co.placetopay.com";
+        var baseUrl = (_configuration[$"PlaceToPay:{siteId}:BaseUrl"] ?? "https://checkout.placetopay.uy").Trim().TrimEnd('/');
         var login = _configuration[$"PlaceToPay:{siteId}:Login"] ?? "";
         var secretKey = _configuration[$"PlaceToPay:{siteId}:SecretKey"] ?? "";
 

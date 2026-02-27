@@ -227,8 +227,9 @@ public class PaymentController : ControllerBase
         try
         {
             var siteId = Request.Headers["X-Site-Id"].FirstOrDefault() ?? "mashogar";
+            _logger.LogInformation("PlaceToPay create-session - SiteId recibido: '{SiteId}'", siteId);
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            
+
             // Obtener el carrito del usuario
             var cart = await _context.ShoppingCarts
                 .Include(c => c.CartItems)
