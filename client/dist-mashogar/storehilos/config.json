@@ -1,11 +1,19 @@
 {
   "siteId": "storehilos",
   "companyName": "Store Hilos",
-  "pageTitle": "Store Hilos - Tienda de Hilos",
-  "description": "Tu tienda de hilos y accesorios de costura de confianza en Uruguay. Encuentra todo lo que necesitas para tus proyectos de costura.",
+  "pageTitle": "Store Hilos - Tienda de Hilos y Accesorios de Costura en Uruguay",
+  "description": "Tu tienda de hilos y accesorios de costura de confianza en Uruguay. Encuentra hilos, agujas, telas y todo lo que necesitas para tus proyectos de costura con envío a todo el país.",
   "apiUrl": "http://localhost:5175",
   "logo": "/src/images/logo_hilos.svg",
   "logoAlt": "/src/images/store_hilos_doble-cropped.svg",
+  "seo": {
+    "siteUrl": "https://storehilos.uy",
+    "keywords": "hilos uruguay, tienda de hilos, accesorios costura, agujas, telas, mercería online, costura uruguay",
+    "ogImage": "/src/images/logo_hilos.svg",
+    "locale": "es_UY",
+    "twitterHandle": "",
+    "googleVerification": ""
+  },
   "colors": {
     "primary": "#042b83",
     "secondary": "#2e488c",
@@ -31,5 +39,7 @@
   "orders": {
     "refreshInterval": 3,
     "enableNotifications": true
-  }
+  },
+  "hideCart": true,
+  "catalogViewMode": "categories"
 }

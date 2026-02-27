@@ -10,40 +10,52 @@ public class PlaceToPayService
     private readonly IConfiguration _configuration;
     private readonly ILogger<PlaceToPayService> _logger;
     private readonly HttpClient _httpClient;
-    private readonly string _baseUrl;
-    private readonly string _login;
-    private readonly string _secretKey;
 
     public PlaceToPayService(IConfiguration configuration, ILogger<PlaceToPayService> logger, HttpClient httpClient)
     {
         _configuration = configuration;
         _logger = logger;
         _httpClient = httpClient;
-        
-        _baseUrl = _configuration["PlaceToPay:BaseUrl"] ?? "https://checkout-co.placetopay.com";
-        _login = _configuration["PlaceToPay:Login"] ?? "";
-        _secretKey = _configuration["PlaceToPay:SecretKey"] ?? "";
+    }
+
+    /// <summary>
+    /// Obtiene las credenciales de PlaceToPay para un sitio específico
+    /// </summary>
+    private (string baseUrl, string login, string secretKey) GetSiteCredentials(string siteId)
+    {
+        var baseUrl = _configuration[$"PlaceToPay:{siteId}:BaseUrl"] ?? "https://checkout-co.placetopay.com";
+        var login = _configuration[$"PlaceToPay:{siteId}:Login"] ?? "";
+        var secretKey = _configuration[$"PlaceToPay:{siteId}:SecretKey"] ?? "";
+
+        if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(secretKey))
+        {
+            _logger.LogWarning("Credenciales de PlaceToPay no configuradas para el sitio: {SiteId}", siteId);
+        }
+
+        return (baseUrl, login, secretKey);
     }
 
     /// <summary>
     /// Genera la autenticación requerida por PlaceToPay
     /// </summary>
-    private PlaceToPayAuth GenerateAuth()
+    private PlaceToPayAuth GenerateAuth(string siteId)
     {
+        var (_, login, secretKey) = GetSiteCredentials(siteId);
+
         var seed = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:sszzz");
         var rawNonce = new Random().Next(100000000, 999999999).ToString();
-        
+
         // Generar tranKey: Base64(SHA-256(nonce + seed + secretKey))
-        var tranKeySource = rawNonce + seed + _secretKey;
+        var tranKeySource = rawNonce + seed + secretKey;
         var tranKeyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(tranKeySource));
         var tranKey = Convert.ToBase64String(tranKeyBytes);
-        
+
         // Codificar nonce en Base64
         var nonce = Convert.ToBase64String(Encoding.UTF8.GetBytes(rawNonce));
-        
+
         return new PlaceToPayAuth
         {
-            Login = _login,
+            Login = login,
             TranKey = tranKey,
             Nonce = nonce,
             Seed = seed
@@ -53,11 +65,12 @@ public class PlaceToPayService
     /// <summary>
     /// Crea una sesión de pago en PlaceToPay
     /// </summary>
-    public async Task<PlaceToPaySessionResponse> CreateSessionAsync(CreateSessionRequest request)
+    public async Task<PlaceToPaySessionResponse> CreateSessionAsync(CreateSessionRequest request, string siteId)
     {
         try
         {
-            var auth = GenerateAuth();
+            var (baseUrl, _, _) = GetSiteCredentials(siteId);
+            var auth = GenerateAuth(siteId);
 
             var sessionData = new
             {
@@ -118,10 +131,10 @@ public class PlaceToPayService
 
             _logger.LogInformation("Creando sesión PlaceToPay para referencia: {Reference}. Payload: {Payload}", request.Reference, json);
             
-            var response = await _httpClient.PostAsync($"{_baseUrl}/api/session", content);
+            var response = await _httpClient.PostAsync($"{baseUrl}/api/session", content);
             var responseContent = await response.Content.ReadAsStringAsync();
-            
-            _logger.LogInformation("Respuesta PlaceToPay: {StatusCode} - {Content}", response.StatusCode, responseContent);
+
+            _logger.LogInformation("Respuesta PlaceToPay ({SiteId}): {StatusCode} - {Content}", siteId, response.StatusCode, responseContent);
 
             if (response.IsSuccessStatusCode)
             {
@@ -133,8 +146,8 @@ public class PlaceToPayService
 
                 if (result != null)
                 {
-                    _logger.LogInformation("Sesión creada exitosamente. RequestId: {RequestId}, ProcessUrl: {ProcessUrl}",
-                        result.RequestId, result.ProcessUrl);
+                    _logger.LogInformation("Sesión creada exitosamente ({SiteId}). RequestId: {RequestId}, ProcessUrl: {ProcessUrl}",
+                        siteId, result.RequestId, result.ProcessUrl);
                     return result;
                 }
 
@@ -142,8 +155,8 @@ public class PlaceToPayService
             }
             else
             {
-                _logger.LogError("Error creando sesión PlaceToPay: {StatusCode} - {Content}",
-                    response.StatusCode, responseContent);
+                _logger.LogError("Error creando sesión PlaceToPay ({SiteId}): {StatusCode} - {Content}",
+                    siteId, response.StatusCode, responseContent);
                 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
@@ -169,11 +182,12 @@ public class PlaceToPayService
     /// <summary>
     /// Consulta el estado de una sesión de pago
     /// </summary>
-    public async Task<PlaceToPayQueryResponse> GetSessionAsync(int requestId)
+    public async Task<PlaceToPayQueryResponse> GetSessionAsync(int requestId, string siteId)
     {
         try
         {
-            var auth = GenerateAuth();
+            var (baseUrl, _, _) = GetSiteCredentials(siteId);
+            var auth = GenerateAuth(siteId);
             
             var queryData = new
             {
@@ -191,7 +205,7 @@ public class PlaceToPayService
             
             _logger.LogInformation("Consultando sesión PlaceToPay. RequestId: {RequestId}", requestId);
             
-            var response = await _httpClient.PostAsync($"{_baseUrl}/api/session/{requestId}", content);
+            var response = await _httpClient.PostAsync($"{baseUrl}/api/session/{requestId}", content);
             var responseContent = await response.Content.ReadAsStringAsync();
             
             if (response.IsSuccessStatusCode)
@@ -227,8 +241,10 @@ public class PlaceToPayService
     /// Valida la firma de una notificación webhook de PlaceToPay
     /// Fórmula: SHA-256(requestId + status + date + secretKey)
     /// </summary>
-    public bool ValidateWebhookSignature(int requestId, string status, string date, string receivedSignature)
+    public bool ValidateWebhookSignature(int requestId, string status, string date, string receivedSignature, string siteId)
     {
+        var (_, _, secretKey) = GetSiteCredentials(siteId);
+
         // La firma viene con prefijo "sha256:" o sin prefijo (SHA-1 legacy)
         var cleanSignature = receivedSignature;
         var useSha256 = true;
@@ -242,7 +258,7 @@ public class PlaceToPayService
             useSha256 = false;
         }
 
-        var raw = $"{requestId}{status}{date}{_secretKey}";
+        var raw = $"{requestId}{status}{date}{secretKey}";
 
         string computedSignature;
         if (useSha256)

@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/auth';
 import { categoriesApi } from '../api/categories';
 import { Category, CreateCategoryData, UpdateCategoryData } from '../types/categories';
 import CategoryForm from '../components/CategoryForm';
+import { getImageUrl } from '../utils/imageUrl';
 
 const Categories = () => {
   const { user } = useAuthStore();
@@ -78,10 +79,11 @@ const Categories = () => {
     try {
       setIsSubmitting(true);
       const updatedCategory = await categoriesApi.updateCategory(editingCategory.id, data);
-      setCategories(prev => prev.map(cat => 
+      setCategories(prev => prev.map(cat =>
         cat.id === editingCategory.id ? updatedCategory : cat
       ));
       setEditingCategory(null);
+      setShowForm(false);
       setNotification({ type: 'success', message: 'Categoría actualizada exitosamente' });
           } catch (err: any) {
         console.error('Error al actualizar categoría:', err);
@@ -241,6 +243,11 @@ const Categories = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-3">
+                        <img
+                          src={getImageUrl(category.imageUrl)}
+                          alt={category.name}
+                          className="h-12 w-12 rounded-md object-cover flex-shrink-0"
+                        />
                         <h3 className="text-lg font-medium text-gray-900 truncate">
                           {category.name}
                         </h3>

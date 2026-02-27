@@ -226,6 +226,7 @@ public class PaymentController : ControllerBase
     {
         try
         {
+            var siteId = Request.Headers["X-Site-Id"].FirstOrDefault() ?? "mashogar";
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
             
             // Obtener el carrito del usuario
@@ -306,13 +307,13 @@ public class PaymentController : ControllerBase
                 Total = totalAmount,
                 TaxAmount = ivaAmount,
                 ReturnUrl = $"{_configuration["FrontendUrl"]?.TrimEnd('/')}/payment/return?orderId={order.Id}",
-                NotificationUrl = $"{_configuration["BackendUrl"]?.TrimEnd('/')}/api/payment/placetopay/webhook",
+                NotificationUrl = $"{_configuration["BackendUrl"]?.TrimEnd('/')}/api/payment/placetopay/webhook?siteId={siteId}",
                 IpAddress = ipAddress,
                 UserAgent = userAgent,
                 Invoice = order.Id.ToString()
             };
 
-            var session = await _placeToPayService.CreateSessionAsync(sessionRequest);
+            var session = await _placeToPayService.CreateSessionAsync(sessionRequest, siteId);
 
             // Guardar información de la sesión en el pedido
             order.PaymentReference = order.OrderNumber;
@@ -360,6 +361,7 @@ public class PaymentController : ControllerBase
     {
         try
         {
+            var siteId = Request.Headers["X-Site-Id"].FirstOrDefault() ?? "mashogar";
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
 
             var order = await _context.Orders
@@ -376,7 +378,7 @@ public class PaymentController : ControllerBase
             }
 
             // Consultar estado en PlaceToPay
-            var session = await _placeToPayService.GetSessionAsync(order.PlaceToPayRequestId.Value);
+            var session = await _placeToPayService.GetSessionAsync(order.PlaceToPayRequestId.Value, siteId);
 
             // Actualizar estado del pedido según respuesta
             if (session.Status != null)
@@ -445,12 +447,12 @@ public class PaymentController : ControllerBase
     /// </summary>
     [HttpPost("placetopay/webhook")]
     [AllowAnonymous]
-    public async Task<IActionResult> PlaceToPayWebhook([FromBody] PlaceToPayWebhookDto webhookRequest)
+    public async Task<IActionResult> PlaceToPayWebhook([FromBody] PlaceToPayWebhookDto webhookRequest, [FromQuery] string siteId = "mashogar")
     {
         try
         {
-            _logger.LogInformation("Webhook recibido de PlaceToPay. RequestId: {RequestId}, Status: {Status}",
-                webhookRequest.RequestId, webhookRequest.Status?.Status);
+            _logger.LogInformation("Webhook recibido de PlaceToPay ({SiteId}). RequestId: {RequestId}, Status: {Status}",
+                siteId, webhookRequest.RequestId, webhookRequest.Status?.Status);
 
             // Validar firma para evitar webhooks falsos
             if (webhookRequest.Status != null && !string.IsNullOrEmpty(webhookRequest.Signature))
@@ -459,7 +461,8 @@ public class PaymentController : ControllerBase
                     webhookRequest.RequestId,
                     webhookRequest.Status.Status,
                     webhookRequest.Status.Date,
-                    webhookRequest.Signature);
+                    webhookRequest.Signature,
+                    siteId);
 
                 if (!isValid)
                 {
@@ -479,7 +482,7 @@ public class PaymentController : ControllerBase
             }
 
             // Consultar el estado real en PlaceToPay para verificar
-            var session = await _placeToPayService.GetSessionAsync(webhookRequest.RequestId);
+            var session = await _placeToPayService.GetSessionAsync(webhookRequest.RequestId, siteId);
 
             if (session.Status != null)
             {

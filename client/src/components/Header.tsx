@@ -113,8 +113,8 @@ const Header: React.FC = () => {
 
               {/* Carrito y usuario */}
               <div className="flex items-center space-x-1 md:space-x-2">
-                {/* Solo mostrar carrito si NO es armador ni cobrador */}
-                {(!user || (user.role !== 'Armador' && user.role !== 'Cobrador')) && (
+                {/* Solo mostrar carrito si NO es armador ni cobrador y hideCart no está activo */}
+                {(!user || (user.role !== 'Armador' && user.role !== 'Cobrador')) && !theme?.hideCart && (
                   <Link
                     to="/cart"
                     className="relative text-gray-700 hover:text-primary-600 transition-colors p-2"

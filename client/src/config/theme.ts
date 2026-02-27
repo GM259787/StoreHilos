@@ -38,6 +38,8 @@ export interface SiteConfig {
     refreshInterval: number;
     enableNotifications: boolean;
   };
+  hideCart?: boolean;
+  catalogViewMode?: 'products' | 'categories';
 }
 
 export interface ThemeConfig extends SiteConfig {}
@@ -122,6 +124,8 @@ export const loadConfig = async (forceReload = false): Promise<ThemeConfig> => {
           refreshInterval: 3,
           enableNotifications: true,
         },
+        hideCart: false,
+        catalogViewMode: 'products',
       };
       return cachedConfig;
     }

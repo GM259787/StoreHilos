@@ -6,9 +6,11 @@ import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
 import { getImageUrl } from '../utils/imageUrl';
 import { useCartSync } from '../hooks/useCartSync';
+import { useTheme } from '../config/theme';
 
 const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const theme = useTheme();
     const { addItem, items, updateQuantity, removeItem } = useCartStore();
     const [Item, setItem] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -263,6 +265,7 @@ const ProductDetail: React.FC = () => {
                                 </div>
 
                                 {/* Quantity and Cart Controls */}
+                                {!theme?.hideCart && (
                                 <div className="space-y-3 sm:space-y-4">
                                     {/* Selector de cantidad */}
                                     <div className="flex items-center justify-between">
@@ -331,6 +334,7 @@ const ProductDetail: React.FC = () => {
                                         )}
                                     </div>
                                 </div>
+                                )}
                             </div>
                         </div>
                     </div>

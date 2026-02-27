@@ -10,7 +10,20 @@ export const fileUploadApi = {
         'Content-Type': 'multipart/form-data',
       },
     });
-    
+
+    return response.data;
+  },
+
+  uploadCategoryImage: async (file: File): Promise<{ fileUrl: string; fileName: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post('/fileupload/upload-category-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
     return response.data;
   }
 };

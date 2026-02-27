@@ -7,6 +7,7 @@ import { useCartStore } from '../store/cart';
 import { formatPrice } from '../utils/currency';
 import { getImageUrl } from '../utils/imageUrl';
 import { useAuthStore } from '../store/auth';
+import { useTheme } from '../config/theme';
 
 
 interface ProductCardProps {
@@ -17,6 +18,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { addItem, items, updateQuantity, removeItem } = useCartStore();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
+  const theme = useTheme();
 
   // Obtener la cantidad actual del producto en el carrito
   const cartItem = items.find(item => item.id === product.id);
@@ -220,55 +222,57 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Controles - Pegados abajo de la card */}
-        <div className="space-y-3 min-h-[80px] flex flex-col justify-end mt-auto">
-          {/* Selector de cantidad */}
-          <div className="flex items-center justify-between">
-            <label htmlFor={`quantity-${product.id}`} className="text-sm font-medium text-gray-700">
-              Cantidad:
-            </label>
-            <div className="flex items-center border border-gray-300 rounded-lg">
-              <button
-                type="button"
-                onClick={() => handleQuantityChange(quantity - 1)}
-                disabled={quantity <= 0}
-                className="px-3 py-1 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                -
-              </button>
-              <input
-                id={`quantity-${product.id}`}
-                type="number"
-                min="0"
-                max={product.availableStock}
-                value={quantity}
-                onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 0)}
-                className="w-16 text-center border-0 focus:ring-0 text-sm"
-              />
-              <button
-                type="button"
-                onClick={() => handleQuantityChange(quantity + 1)}
-                disabled={quantity >= product.availableStock}
-                className="px-3 py-1 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                +
-              </button>
+        {!theme?.hideCart && (
+          <div className="space-y-3 min-h-[80px] flex flex-col justify-end mt-auto">
+            {/* Selector de cantidad */}
+            <div className="flex items-center justify-between">
+              <label htmlFor={`quantity-${product.id}`} className="text-sm font-medium text-gray-700">
+                Cantidad:
+              </label>
+              <div className="flex items-center border border-gray-300 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => handleQuantityChange(quantity - 1)}
+                  disabled={quantity <= 0}
+                  className="px-3 py-1 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  -
+                </button>
+                <input
+                  id={`quantity-${product.id}`}
+                  type="number"
+                  min="0"
+                  max={product.availableStock}
+                  value={quantity}
+                  onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 0)}
+                  className="w-16 text-center border-0 focus:ring-0 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleQuantityChange(quantity + 1)}
+                  disabled={quantity >= product.availableStock}
+                  className="px-3 py-1 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  +
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Botón agregar al carrito - solo si no está en el carrito */}
-          {!cartItem && (
-            <button
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isOutOfStock
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-primary-600 text-white hover:bg-primary-700'
-                }`}
-            >
-              {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
-            </button>
-          )}
-        </div>
+            {/* Botón agregar al carrito - solo si no está en el carrito */}
+            {!cartItem && (
+              <button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isOutOfStock
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-primary-600 text-white hover:bg-primary-700'
+                  }`}
+              >
+                {isOutOfStock ? 'Sin stock' : 'Agregar al carrito'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,23 +1,45 @@
 import { useState, useEffect } from 'react';
-import { Product, Paged } from '../types/catalog';
+import { Product, Category, Paged } from '../types/catalog';
 import { catalogApi } from '../api/catalog';
 import CategoryMenu from '../components/CategoryMenu';
 import ProductCard from '../components/ProductCard';
+import CategoryCard from '../components/CategoryCard';
 import Pagination from '../components/Pagination';
+import { useTheme } from '../config/theme';
 
 const Catalog = () => {
+  const theme = useTheme();
+  const isCategoryMode = theme?.catalogViewMode === 'categories';
+
   const [products, setProducts] = useState<Paged<Product>>({ items: [], total: 0, page: 1, pageSize: 12 });
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('');
+  const [showingCategories, setShowingCategories] = useState(true);
+
+  // Cargar categorías para el modo categorías
+  useEffect(() => {
+    if (isCategoryMode) {
+      const loadCategories = async () => {
+        try {
+          const data = await catalogApi.getCategories();
+          setCategories(data);
+        } catch (err) {
+          console.error('Error loading categories:', err);
+        }
+      };
+      loadCategories();
+    }
+  }, [isCategoryMode]);
 
   const loadProducts = async (page: number = 1) => {
     try {
       setIsLoading(true);
       setError('');
-      
+
       const filters = {
         categoryId: selectedCategory || undefined,
         search: searchTerm || undefined,
@@ -37,8 +59,13 @@ const Catalog = () => {
   };
 
   useEffect(() => {
+    // En modo categorías, solo cargar productos cuando se selecciona una categoría
+    if (isCategoryMode && showingCategories) {
+      setIsLoading(false);
+      return;
+    }
     loadProducts(1);
-  }, [selectedCategory, searchTerm, sortBy]);
+  }, [selectedCategory, searchTerm, sortBy, showingCategories]);
 
   const handlePageChange = (page: number) => {
     loadProducts(page);
@@ -49,23 +76,96 @@ const Catalog = () => {
     loadProducts(1);
   };
 
+  const handleCategoryCardClick = (categoryId: number) => {
+    setSelectedCategory(categoryId);
+    setShowingCategories(false);
+  };
+
+  const handleBackToCategories = () => {
+    setSelectedCategory(null);
+    setSearchTerm('');
+    setSortBy('');
+    setShowingCategories(true);
+  };
+
+  const handleCategorySelect = (categoryId: number | null) => {
+    setSelectedCategory(categoryId);
+    if (isCategoryMode) {
+      if (categoryId === null) {
+        setShowingCategories(true);
+      } else {
+        setShowingCategories(false);
+      }
+    }
+  };
+
   const totalPages = Math.ceil(products.total / products.pageSize);
 
+  const selectedCategoryName = selectedCategory
+    ? categories.find(c => c.id === selectedCategory)?.name
+    : null;
+
+  // Vista de categorías (modo StoreHilos)
+  if (isCategoryMode && showingCategories) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Categorías</h2>
+        {categories.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando categorías...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                onClick={handleCategoryCardClick}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Vista de productos (modo MásHogar o categoría seleccionada en StoreHilos)
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Botón volver a categorías (solo en modo categorías) */}
+      {isCategoryMode && (
+        <button
+          onClick={handleBackToCategories}
+          className="mb-6 flex items-center space-x-2 text-primary-600 hover:text-primary-700 font-medium transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Volver a categorías</span>
+        </button>
+      )}
+
+      {/* Título de categoría seleccionada */}
+      {isCategoryMode && selectedCategoryName && (
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">{selectedCategoryName}</h2>
+      )}
+
       {/* Filtros */}
       <div className="mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Categorías */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Categoría
-            </label>
-            <CategoryMenu
-              selectedCategory={selectedCategory}
-              onCategorySelect={setSelectedCategory}
-            />
-          </div>
+        <div className={`grid grid-cols-1 ${isCategoryMode ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-4`}>
+          {/* Categorías dropdown (solo en modo productos) */}
+          {!isCategoryMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Categoría
+              </label>
+              <CategoryMenu
+                selectedCategory={selectedCategory}
+                onCategorySelect={handleCategorySelect}
+              />
+            </div>
+          )}
 
           {/* Búsqueda */}
           <div>

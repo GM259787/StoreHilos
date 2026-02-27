@@ -5,20 +5,6 @@ import { loadConfig } from '../config/theme';
 let apiInstance: AxiosInstance | null = null;
 let initPromise: Promise<AxiosInstance> | null = null;
 
-// Configuración flexible de la API
-const getApiBaseUrl = async () => {
-  try {
-    const config = await loadConfig();
-    console.log('Config loaded, API URL:', config.apiUrl);
-    // Si apiUrl está vacío o es undefined, usar el mismo origen (para cuando frontend y backend están en el mismo dominio)
-    return config.apiUrl || window.location.origin;
-  } catch (error) {
-    console.error('Error loading config, using fallback:', error);
-    // Fallback a localhost si falla la carga del config
-    return 'http://localhost:5175';
-  }
-};
-
 const initializeApi = async (): Promise<AxiosInstance> => {
   if (apiInstance) {
     return apiInstance;
@@ -29,17 +15,26 @@ const initializeApi = async (): Promise<AxiosInstance> => {
   }
 
   initPromise = (async () => {
-    const baseUrl = await getApiBaseUrl();
+    let config;
+    try {
+      config = await loadConfig();
+    } catch (error) {
+      console.error('Error loading config, using fallback:', error);
+      config = { apiUrl: 'http://localhost:5175', siteId: 'mashogar' };
+    }
+
+    const baseUrl = config.apiUrl || window.location.origin;
     console.log('Initializing API with base URL:', baseUrl);
-    
+
     // Normalizar baseURL: remover /api si ya existe al final para evitar duplicaciones
     const normalizedBaseUrl = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
     console.log('Normalized base URL:', normalizedBaseUrl);
-    
+
     apiInstance = axios.create({
       baseURL: normalizedBaseUrl,
       headers: {
         'Content-Type': 'application/json',
+        'X-Site-Id': config.siteId || 'mashogar',
       },
       timeout: 30000,
     });

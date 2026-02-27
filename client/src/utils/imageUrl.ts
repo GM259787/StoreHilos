@@ -3,6 +3,15 @@
  * Maneja tanto URLs absolutas como relativas
  */
 
+import { loadConfig } from '../config/theme';
+
+// Cache del apiUrl del config.json
+let cachedApiUrl: string | null = null;
+
+loadConfig().then(config => {
+  cachedApiUrl = config.apiUrl || null;
+}).catch(() => {});
+
 /**
  * Construye la URL completa para una imagen
  * @param imageUrl - La URL de la imagen (puede ser relativa o absoluta)
@@ -10,7 +19,7 @@
  * @returns La URL completa de la imagen
  */
 export const getImageUrl = (
-  imageUrl: string | null | undefined, 
+  imageUrl: string | null | undefined,
   apiBaseUrl?: string
 ): string => {
   // Placeholder por defecto
@@ -23,14 +32,12 @@ export const getImageUrl = (
     return encodeURI(imageUrl);
   }
 
-  // Si es una ruta relativa, construir URL completa
-  // Las imágenes se sirven desde el mismo servidor del API
-  // Usar window.location.origin como fallback para cuando el config no esté disponible
-  const baseUrl = apiBaseUrl || window.location.origin;
-  
+  // Usar apiUrl del config.json, fallback a window.location.origin
+  const baseUrl = apiBaseUrl || cachedApiUrl || window.location.origin;
+
   // Asegurar que la imageUrl empiece con /
   const normalizedImageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-  
+
   return encodeURI(`${baseUrl}${normalizedImageUrl}`);
 };
 
