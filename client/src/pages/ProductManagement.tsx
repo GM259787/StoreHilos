@@ -27,6 +27,20 @@ interface UpdateProductForm {
   categoryId?: number;
 }
 
+interface BulkProductForm {
+  baseName: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryId: number;
+}
+
+interface BulkImagePreview {
+  file: File;
+  preview: string;
+  color: string;
+}
+
 const ProductManagement: React.FC = () => {
   const { user } = useAuthStore();
   const { forceSync } = useCartStore();
@@ -56,6 +70,19 @@ const ProductManagement: React.FC = () => {
   const [editingImage, setEditingImage] = useState<File | null>(null);
   const [editingImagePreview, setEditingImagePreview] = useState<string | null>(null);
   const [updatingImage, setUpdatingImage] = useState(false);
+
+  // Estado para carga masiva
+  const [showBulkForm, setShowBulkForm] = useState(false);
+  const [bulkForm, setBulkForm] = useState<BulkProductForm>({
+    baseName: '',
+    description: '',
+    price: 0,
+    stock: 0,
+    categoryId: 0
+  });
+  const [bulkImages, setBulkImages] = useState<BulkImagePreview[]>([]);
+  const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState('');
 
   // URL base del backend para las imágenes
   const [API_BASE_URL, setApiBaseUrl] = useState<string>('http://localhost:5175');
@@ -280,6 +307,105 @@ const ProductManagement: React.FC = () => {
     setDiscountProduct(null);
   };
 
+  // Extraer color del nombre del archivo (sin extensión, capitalizado)
+  const extractColorFromFilename = (filename: string): string => {
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+    return nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
+  };
+
+  // Manejar selección de múltiples imágenes para carga masiva
+  const handleBulkImagesSelect = (files: FileList) => {
+    const newImages: BulkImagePreview[] = [];
+    let loaded = 0;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        newImages.push({
+          file,
+          preview: e.target?.result as string,
+          color: extractColorFromFilename(file.name)
+        });
+        loaded++;
+        if (loaded === files.length) {
+          setBulkImages(prev => [...prev, ...newImages]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Eliminar una imagen del preview de carga masiva
+  const removeBulkImage = (index: number) => {
+    setBulkImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Crear productos en masa
+  const handleBulkCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (bulkImages.length === 0) {
+      showError('Sin imágenes', 'Debes seleccionar al menos una imagen');
+      return;
+    }
+
+    if (bulkForm.categoryId === 0) {
+      showError('Sin categoría', 'Debes seleccionar una categoría');
+      return;
+    }
+
+    setBulkUploading(true);
+    const created: Product[] = [];
+    const errors: string[] = [];
+
+    for (let i = 0; i < bulkImages.length; i++) {
+      const img = bulkImages[i];
+      setBulkProgress(`${i + 1}/${bulkImages.length}`);
+
+      try {
+        // Subir imagen
+        const uploadResult = await fileUploadApi.uploadImage(img.file);
+
+        // Crear producto
+        const productName = `${bulkForm.baseName} - ${img.color}`;
+        const newProduct = await catalogApi.createProduct({
+          name: productName,
+          description: bulkForm.description || undefined,
+          imageUrl: uploadResult.fileUrl,
+          stock: bulkForm.stock,
+          price: bulkForm.price,
+          categoryId: bulkForm.categoryId
+        });
+        created.push(newProduct);
+      } catch (err: any) {
+        errors.push(`${img.color}: ${err.response?.data?.message || err.message}`);
+      }
+    }
+
+    setBulkUploading(false);
+    setBulkProgress('');
+
+    // Actualizar lista de productos
+    if (created.length > 0) {
+      setProducts(prev => [...prev, ...created]);
+    }
+
+    // Mostrar resultado
+    if (errors.length === 0) {
+      showSuccess('¡Carga masiva completada!', `Se crearon ${created.length} productos exitosamente`);
+      // Limpiar formulario
+      setBulkForm({ baseName: '', description: '', price: 0, stock: 0, categoryId: 0 });
+      setBulkImages([]);
+      setShowBulkForm(false);
+    } else if (created.length > 0) {
+      showError('Carga parcial', `Se crearon ${created.length} productos. Errores (${errors.length}):\n${errors.join('\n')}`);
+      setBulkImages([]);
+      setShowBulkForm(false);
+    } else {
+      showError('Error en carga masiva', `No se pudo crear ningún producto:\n${errors.join('\n')}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -313,13 +439,19 @@ const ProductManagement: React.FC = () => {
           </p>
         </div>
 
-        {/* Botón para crear nuevo producto */}
-        <div className="mb-6">
+        {/* Botones para crear producto */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-3">
           <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
+            onClick={() => { setShowCreateForm(!showCreateForm); setShowBulkForm(false); }}
             className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2.5 sm:py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
           >
             {showCreateForm ? 'Cancelar' : 'Crear Nuevo Producto'}
+          </button>
+          <button
+            onClick={() => { setShowBulkForm(!showBulkForm); setShowCreateForm(false); }}
+            className="w-full sm:w-auto bg-purple-600 text-white px-4 py-2.5 sm:py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base"
+          >
+            {showBulkForm ? 'Cancelar Carga Masiva' : 'Carga Masiva'}
           </button>
         </div>
 
@@ -449,6 +581,171 @@ const ProductManagement: React.FC = () => {
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {uploadingImage ? 'Subiendo imagen...' : 'Crear Producto'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Formulario de carga masiva */}
+        {showBulkForm && (
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8 border-2 border-purple-200">
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 text-purple-800">Carga Masiva de Productos</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Sube varias imágenes y se creará un producto por cada una. El color se toma del nombre del archivo.
+            </p>
+            <form onSubmit={handleBulkCreate} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre base del producto *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={bulkForm.baseName}
+                    onChange={(e) => setBulkForm({ ...bulkForm, baseName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Ej: Hilo de algodón"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Cada producto se llamará: "Nombre base - Color"
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Categoría *
+                  </label>
+                  <select
+                    required
+                    value={bulkForm.categoryId}
+                    onChange={(e) => setBulkForm({ ...bulkForm, categoryId: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value={0}>Seleccionar categoría</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Precio (UYU) *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={bulkForm.price}
+                    onChange={(e) => setBulkForm({ ...bulkForm, price: parseFloat(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stock por producto *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={bulkForm.stock}
+                    onChange={(e) => setBulkForm({ ...bulkForm, stock: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descripción (compartida)
+                  </label>
+                  <textarea
+                    value={bulkForm.description}
+                    onChange={(e) => setBulkForm({ ...bulkForm, description: e.target.value })}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm sm:text-base"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Imágenes (una por color) *
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        handleBulkImagesSelect(e.target.files);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    El nombre del archivo será el color del producto. Ej: "rojo.jpg" → color "Rojo"
+                  </p>
+                </div>
+              </div>
+
+              {/* Preview de imágenes seleccionadas */}
+              {bulkImages.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Productos a crear ({bulkImages.length}):
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {bulkImages.map((img, index) => (
+                      <div key={index} className="relative bg-gray-50 rounded-lg p-2 border border-gray-200">
+                        <button
+                          type="button"
+                          onClick={() => removeBulkImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 z-10"
+                        >
+                          X
+                        </button>
+                        <img
+                          src={img.preview}
+                          alt={img.color}
+                          className="w-full h-20 object-cover rounded mb-1"
+                        />
+                        <p className="text-xs text-center font-medium text-purple-700 truncate">
+                          {bulkForm.baseName ? `${bulkForm.baseName} - ${img.color}` : img.color}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Barra de progreso */}
+              {bulkUploading && (
+                <div className="bg-purple-50 rounded-lg p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-purple-600 border-solid"></div>
+                    <span className="text-sm text-purple-700 font-medium">
+                      Creando producto {bulkProgress}...
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowBulkForm(false); setBulkImages([]); }}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 text-sm sm:text-base"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={bulkUploading || bulkImages.length === 0}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base"
+                >
+                  {bulkUploading ? `Creando ${bulkProgress}...` : `Crear ${bulkImages.length} Producto${bulkImages.length !== 1 ? 's' : ''}`}
                 </button>
               </div>
             </form>

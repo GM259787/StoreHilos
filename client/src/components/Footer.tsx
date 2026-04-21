@@ -63,6 +63,11 @@ const Footer = () => {
                     Carrito
                   </a>
                 </li>
+                <li>
+                  <a href="/faq" className="text-gray-300 hover:text-white transition-colors">
+                    Preguntas Frecuentes
+                  </a>
+                </li>
               </ul>
             </div>
           </div>

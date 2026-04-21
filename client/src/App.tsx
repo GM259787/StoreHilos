@@ -21,6 +21,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import ProductDetail from './pages/ProductDetail';
+import FAQ from './pages/FAQ';
 import { useAuthStore } from './store/auth';
 import { useCartBackendSync } from './hooks/useCartBackendSync';
 
@@ -69,6 +70,7 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/faq" element={<FAQ />} />
             </Routes>
           </main>
           <Footer />
