@@ -4,6 +4,7 @@ import { useCartStore } from '../store/cart';
 import { ordersApi } from '../api/orders';
 import { formatPrice } from '../utils/currency';
 import { showError } from '../utils/alerts';
+import { useTheme } from '../config/theme';
 
 interface TransferData {
   method: string;
@@ -18,6 +19,9 @@ const TransferConfirmation: React.FC = () => {
   const { clearCart } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderCreated, setOrderCreated] = useState(false);
+
+  const theme = useTheme();
+  const bankTransfer = theme?.bankTransfer;
 
   const transferData = location.state as TransferData;
 
@@ -84,10 +88,10 @@ const TransferConfirmation: React.FC = () => {
               <div className="p-3 bg-white rounded border">
                 <h3 className="font-medium text-gray-900">Datos bancarios:</h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  Banco: [Nombre del banco]<br />
-                  Cuenta: [Número de cuenta]<br />
-                  Titular: [Nombre del titular]<br />
-                  CI: [Cédula de identidad]
+                  Banco: {bankTransfer?.bank ?? '-'}<br />
+                  Cuenta: {bankTransfer?.account ?? '-'}<br />
+                  Titular: {bankTransfer?.holder ?? '-'}<br />
+                  CI/RUT: {bankTransfer?.id ?? '-'}
                 </p>
               </div>
               <div className="p-3 bg-white rounded border">

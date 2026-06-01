@@ -38,8 +38,15 @@ export interface SiteConfig {
     refreshInterval: number;
     enableNotifications: boolean;
   };
+  favicon?: string;
   hideCart?: boolean;
   catalogViewMode?: 'products' | 'categories';
+  bankTransfer?: {
+    bank: string;
+    account: string;
+    holder: string;
+    id: string;
+  };
 }
 
 export interface ThemeConfig extends SiteConfig {}
